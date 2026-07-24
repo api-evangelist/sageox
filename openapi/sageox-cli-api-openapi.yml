@@ -1,0 +1,876 @@
+openapi: 3.1.0
+info:
+  title: SageOx Admin CLI API
+  version: 1.0.0
+  description: "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n"
+  contact:
+    name: SageOx Team
+  license:
+    name: MIT
+servers:
+- url: http://localhost:3000
+  description: Devcontainer
+- url: https://test.sageox.ai
+  description: Test
+- url: https://sageox.ai
+  description: Production
+security:
+- bearerAuth: []
+tags:
+- name: CLI
+  description: 'Integration endpoints for the `ox` CLI tool. Includes device flow authentication (code request → polling → token exchange), server-side diagnostics, repository initialization, and friction event tracking for UX telemetry.
+
+    '
+paths:
+  /api/v1/cli/auth/token:
+    get:
+      operationId: cliTokenExchange
+      summary: Exchange session token for JWT
+      description: 'Exchanges an opaque session token for a JWT access token.
+
+        Used by ox-cli after device flow authentication to obtain a short-lived JWT.
+
+
+        **Authentication:** Public (no auth required)
+
+        - Request can include Bearer token (opaque session token from device flow)
+
+        - Returns JWT valid for 15 minutes
+
+
+        **Rate limit:** 30 requests/minute per IP address
+
+        '
+      tags:
+      - CLI
+      security: []
+      parameters:
+      - in: header
+        name: Authorization
+        schema:
+          type: string
+          example: Bearer opaque-session-token-from-device-flow
+        description: Optional session token to exchange. If not provided or already a JWT, validates and returns as-is.
+      responses:
+        '200':
+          description: Token exchange successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - access_token
+                - token_type
+                - expires_in
+                properties:
+                  access_token:
+                    type: string
+                    description: JWT access token for subsequent API calls
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfMTIzNDU2IiwiZXhwIjoxNzI5NjU5MTAwfQ.sign
+                  token_type:
+                    type: string
+                    description: Always "Bearer"
+                    enum:
+                    - Bearer
+                    example: Bearer
+                  expires_in:
+                    type: integer
+                    description: Token expiration time in seconds (typically 900 = 15 minutes)
+                    example: 900
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_token:
+                  value:
+                    success: false
+                    error: missing bearer token
+                invalid_token:
+                  value:
+                    success: false
+                    error: invalid token
+        '500':
+          description: Server error during token exchange
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/cli/doctor/context:
+    get:
+      operationId: getCliDoctorContext
+      summary: Get server-side diagnostic context for CLI
+      description: 'Returns comprehensive server-side context for client troubleshooting.
+
+        Used by `ox doctor` command to verify connectivity, configuration, and feature availability.
+
+
+        Includes user info, repositories, teams with git configurations, integration endpoints,
+
+        feature flags, expected environment variables, and server metadata.
+
+
+        **Authentication:** Bearer token required
+
+        '
+      tags:
+      - CLI
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Diagnostic context retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - repositories
+                - teams
+                - endpoints
+                - features
+                - server
+                properties:
+                  user:
+                    type: object
+                    description: Authenticated user information
+                    properties:
+                      id:
+                        type: string
+                        example: usr_01aq5p00aq5p00aq5p
+                      email:
+                        type: string
+                        format: email
+                        example: user@example.com
+                      name:
+                        type: string
+                        example: Jane Developer
+                      tier:
+                        type: string
+                        description: User subscription tier
+                        enum:
+                        - free
+                        - pro
+                        - enterprise
+                        example: pro
+                  repositories:
+                    type: array
+                    description: Repositories registered for this user
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Repository ID (repo_<uuidv7>)
+                          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                        type:
+                          type: string
+                          enum:
+                          - git
+                          example: git
+                        status:
+                          type: string
+                          description: Repository status in SageOx
+                          enum:
+                          - active
+                          - archived
+                          - error
+                          example: active
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: '2025-12-18T10:30:00Z'
+                        teams:
+                          type: array
+                          description: Team IDs this repo belongs to
+                          items:
+                            type: string
+                          example:
+                          - team_abc123xyz
+                          - team_def456uvw
+                        git:
+                          type: object
+                          properties:
+                            provider:
+                              type: string
+                              enum:
+                              - gitlab
+                              - github
+                              - gitea
+                              example: gitlab
+                            default_branch:
+                              type: string
+                              example: main
+                            remote_url:
+                              type: string
+                              format: uri
+                              example: http://localhost:8929/group/project.git
+                  teams:
+                    type: array
+                    description: Teams the user belongs to with git configurations
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: team_abc123xyz
+                        slug:
+                          type: string
+                          description: URL-safe team identifier
+                          example: my-team
+                        name:
+                          type: string
+                          example: My Team
+                        role:
+                          type: string
+                          description: User's role in this team
+                          enum:
+                          - owner
+                          - admin
+                          - editor
+                          - viewer
+                          example: owner
+                        git:
+                          type: object
+                          description: Git configuration for this team
+                          properties:
+                            remote_url:
+                              type: string
+                              format: uri
+                              example: http://localhost:8929/group/norms.git
+                            default_branch:
+                              type: string
+                              example: main
+                            provider:
+                              type: string
+                              example: gitlab
+                        norms_url:
+                          type: string
+                          format: uri
+                          description: Git URL for team conventions repository
+                          example: http://localhost:8929/group/norms.git
+                  endpoints:
+                    type: object
+                    description: Integration endpoints client should verify
+                    required:
+                    - api
+                    - auth
+                    properties:
+                      api:
+                        type: string
+                        format: uri
+                        description: SageOx API base URL
+                        example: http://localhost:3000
+                      auth:
+                        type: string
+                        format: uri
+                        description: Authentication service URL
+                        example: http://localhost:3000
+                      gitlab:
+                        type: string
+                        format: uri
+                        description: GitLab instance URL (if configured)
+                        example: http://localhost:8929
+                      websocket:
+                        type: string
+                        format: uri
+                        description: WebSocket endpoint for real-time updates
+                        example: ws://localhost:3000
+                  features:
+                    type: object
+                    description: Feature flags that affect client behavior
+                    properties:
+                      temporal:
+                        type: boolean
+                        description: Temporal workflow engine availability
+                        example: true
+                      ocr:
+                        type: boolean
+                        description: Optical character recognition feature
+                        example: false
+                      notifications:
+                        type: object
+                        description: Notification channel configuration
+                  expected_env_vars:
+                    type: array
+                    description: Environment variables client should check
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          example: SAGEOX_API_URL
+                        description:
+                          type: string
+                          example: Base URL for SageOx API
+                        required:
+                          type: boolean
+                          example: false
+                        example:
+                          type: string
+                          example: http://localhost:3000
+                  server:
+                    type: object
+                    description: Server metadata and version info
+                    required:
+                    - version
+                    - environment
+                    - timestamp
+                    properties:
+                      version:
+                        type: string
+                        description: API server version
+                        example: 0.15.0
+                      environment:
+                        type: string
+                        enum:
+                        - development
+                        - staging
+                        - production
+                        example: development
+                      timestamp:
+                        type: string
+                        format: date-time
+                        description: Server time when context was generated
+                        example: '2025-12-18T10:30:00Z'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/cli/friction:
+    post:
+      operationId: submitCliEvents
+      summary: Submit CLI friction events
+      description: 'Accepts batched CLI friction events for UX improvement and friction analysis.
+
+        Used by ox-cli to report issues such as unknown commands, invalid flags, parsing errors, etc.
+
+
+        **Authentication:** Optional (can be authenticated or public)
+
+        - If authenticated, associates events with user account
+
+        - If not authenticated, events are recorded anonymously
+
+
+        **Events validation:**
+
+        - Timestamp: RFC3339 format required
+
+        - Kind: must be one of unknown-command, unknown-flag, missing-required, invalid-arg, parse-error
+
+        - Actor: must be human, agent, or unknown
+
+        - PathBucket: must be home, repo, or other
+
+        - Input: max 500 characters
+
+        - ErrorMsg: max 200 characters
+
+        - MaxEventsPerRequest: 100 events per batch
+
+
+        **Server feedback:**
+
+        - X-SageOx-Friction-Status header indicates collection status (active, paused, sampling)
+
+        - X-SageOx-Sample-Rate header (if sampling) indicates sample rate
+
+        - X-SageOx-Pause-Until header (if paused) indicates when collection resumes
+
+        '
+      tags:
+      - CLI
+      security:
+      - BearerAuth: []
+      - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - events
+              properties:
+                events:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  description: Array of friction events (max 100 per request)
+                  items:
+                    type: object
+                    required:
+                    - ts
+                    - kind
+                    - command
+                    - actor
+                    - path_bucket
+                    - input
+                    - error_msg
+                    properties:
+                      ts:
+                        type: string
+                        format: date-time
+                        description: Event timestamp in RFC3339 format
+                        example: '2025-12-18T10:30:45Z'
+                      kind:
+                        type: string
+                        description: Type of friction event
+                        enum:
+                        - unknown-command
+                        - unknown-flag
+                        - missing-required
+                        - invalid-arg
+                        - parse-error
+                        example: unknown-command
+                      command:
+                        type: string
+                        description: Command that triggered the event
+                        example: ox
+                      subcommand:
+                        type: string
+                        description: Subcommand (optional)
+                        example: init
+                      actor:
+                        type: string
+                        description: Who triggered the event
+                        enum:
+                        - human
+                        - agent
+                        - unknown
+                        example: human
+                      agent_type:
+                        type: string
+                        description: Type of agent if actor=agent
+                        example: claude-3-sonnet
+                      path_bucket:
+                        type: string
+                        description: Working directory category
+                        enum:
+                        - home
+                        - repo
+                        - other
+                        example: repo
+                      input:
+                        type: string
+                        description: Command input (redacted if sensitive, max 500 chars)
+                        example: ox init --invalid-flag
+                        maxLength: 500
+                      error_msg:
+                        type: string
+                        description: Error message (max 200 chars)
+                        example: 'unknown flag: --invalid-flag'
+                        maxLength: 200
+                      suggestion:
+                        type: string
+                        description: Suggested correction (optional)
+                        example: 'Did you mean: --no-install?'
+              examples:
+                single_event:
+                  summary: Single friction event
+                  value:
+                    events:
+                    - ts: '2025-12-18T10:30:45Z'
+                      kind: unknown-flag
+                      command: ox
+                      subcommand: init
+                      actor: human
+                      path_bucket: repo
+                      input: ox init --invalid-flag
+                      error_msg: 'unknown flag: --invalid-flag'
+                      suggestion: 'Did you mean: --no-install?'
+                batch:
+                  summary: Batch of multiple events
+                  value:
+                    events:
+                    - ts: '2025-12-18T10:30:45Z'
+                      kind: unknown-flag
+                      command: ox
+                      actor: human
+                      path_bucket: repo
+                      input: ox init --verbose
+                      error_msg: 'unknown flag: --verbose'
+                    - ts: '2025-12-18T10:31:12Z'
+                      kind: invalid-arg
+                      command: ox
+                      subcommand: config
+                      actor: human
+                      path_bucket: home
+                      input: ox config set invalid_key value
+                      error_msg: invalid configuration key
+      responses:
+        '200':
+          description: Events accepted and processed
+          headers:
+            X-SageOx-Friction-Status:
+              schema:
+                type: string
+                enum:
+                - active
+                - paused
+                - sampling
+              description: Current friction collection status
+              example: active
+            X-SageOx-Sample-Rate:
+              schema:
+                type: string
+              description: Sample rate if status is sampling (e.g., "0.5")
+              example: '0.5'
+            X-SageOx-Pause-Until:
+              schema:
+                type: string
+                format: date-time
+              description: Resume time if status is paused
+              example: '2025-12-18T11:30:45Z'
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - accepted
+                properties:
+                  accepted:
+                    type: integer
+                    description: Number of events accepted and processed
+                    example: 2
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_events:
+                  value:
+                    success: false
+                    error: No events provided
+                too_many_events:
+                  value:
+                    success: false
+                    error: 'Too many events: 150 (max 100)'
+                invalid_json:
+                  value:
+                    success: false
+                    error: Invalid JSON body
+        '413':
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Friction tracking not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                not_configured:
+                  value:
+                    success: false
+                    error: Friction tracking not configured
+  /api/v1/cli/repos:
+    get:
+      operationId: listCliRepos
+      summary: List user's registered repositories
+      description: 'Lists all repositories registered with SageOx for the authenticated user.
+
+        Returns minimal repository information including ID, team associations, and registration time.
+
+
+        **Authentication:** Bearer token required
+
+
+        **Pagination:** Not implemented (returns all repos)
+
+        '
+      tags:
+      - CLI
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: List of user's repositories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - repo_id
+                  - created_at
+                  properties:
+                    repo_id:
+                      type: string
+                      description: Repository ID (repo_<uuidv7>)
+                      example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                    team_id:
+                      type: string
+                      description: Primary team ID (if repository is associated with a single team)
+                      example: team_abc123xyz
+                    name:
+                      type: string
+                      description: Human-readable repository name (optional)
+                      example: my-project
+                    created_at:
+                      type: string
+                      format: date-time
+                      description: When the repository was registered
+                      example: '2025-12-18T10:30:00Z'
+              examples:
+                multiple_repos:
+                  value:
+                  - repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                    team_id: team_abc123xyz
+                    name: my-project
+                    created_at: '2025-12-18T10:30:00Z'
+                  - repo_id: repo_01934f5b-1234-7abc-9012-def456789012
+                    team_id: team_def456uvw
+                    name: another-project
+                    created_at: '2025-12-10T08:15:00Z'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/cli/repo/init:
+    post:
+      operationId: initCliRepo
+      summary: Initialize repository with CLI support
+      description: 'Registers a git repository with SageOx and creates an associated team.
+
+        **Preferred route for ox-cli** (use instead of /api/v1/repo/init).
+
+
+        Supports additional `teams` array parameter for multi-team repositories.
+
+
+        **Authentication:** Optional
+
+        - **Authenticated:** User becomes owner of newly created team
+
+        - **Unauthenticated:** Creates orphan team (can be claimed later with claim code)
+
+
+        **Idempotency:** If repo_id already exists, returns existing repo/team info with 200 status.
+
+
+        Teams can be merged later via /api/v1/repo/merge endpoint.
+
+        '
+      tags:
+      - CLI
+      security:
+      - BearerAuth: []
+      - {}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - repo_id
+              - type
+              - init_at
+              properties:
+                repo_id:
+                  type: string
+                  description: Client-generated repo identifier
+                  pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                  example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                type:
+                  type: string
+                  description: VCS type (git supported, svn planned)
+                  enum:
+                  - git
+                  example: git
+                init_at:
+                  type: string
+                  format: date-time
+                  description: Timestamp from .repo_<id> marker file
+                  example: '2025-12-18T16:30:00Z'
+                repo_salt:
+                  type: string
+                  description: Initial commit hash for salted remote hashing (optional, omitted in --offline mode)
+                  example: abc123def456789abc123def456789abc123def456
+                repo_remote_hashes:
+                  type: array
+                  description: SHA256(repo_salt + remote_url) for each git remote (optional, omitted in --offline mode)
+                  items:
+                    type: string
+                  example:
+                  - sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+                  - sha256:e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x
+                is_public:
+                  type: boolean
+                  description: When true, prevents automatic merging with repos that have matching hashes (fork protection)
+                  example: false
+                created_by_email:
+                  type: string
+                  format: email
+                  description: Git user.email from local config (optional, omitted in --offline mode)
+                  example: developer@example.com
+                created_by_name:
+                  type: string
+                  description: Git user.name from local config (optional, omitted in --offline mode)
+                  example: Developer Name
+                teams:
+                  type: array
+                  description: Additional team IDs to associate with this repository (optional, CLI extension)
+                  items:
+                    type: string
+                    pattern: ^team_
+                  example:
+                  - team_abc123xyz
+                  - team_def456uvw
+            examples:
+              full:
+                summary: Full request with all optional fields
+                value:
+                  repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                  type: git
+                  init_at: '2025-12-18T16:30:00Z'
+                  repo_salt: abc123def456789abc123def456789abc123def456
+                  repo_remote_hashes:
+                  - sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0
+                  is_public: false
+                  created_by_email: developer@example.com
+                  created_by_name: Developer Name
+                  teams:
+                  - team_abc123xyz
+              offline:
+                summary: Minimal request (--offline mode)
+                value:
+                  repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                  type: git
+                  init_at: '2025-12-18T16:30:00Z'
+      responses:
+        '200':
+          description: Repository already exists (idempotent response)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - repo_id
+                properties:
+                  repo_id:
+                    type: string
+                    description: The existing repo_id
+                    example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                  team_id:
+                    type: string
+                    description: ID of the existing team
+                    example: team_abc123xyz
+                  web_base_url:
+                    type: string
+                    format: uri
+                    description: Base URL for web UI (enterprise deployments)
+                    example: https://sageox.ai
+        '201':
+          description: Repository registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - repo_id
+                - team_id
+                properties:
+                  repo_id:
+                    type: string
+                    description: The registered repo_id
+                    example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                  team_id:
+                    type: string
+                    description: ID of the newly created team
+                    example: team_abc123xyz
+                  web_base_url:
+                    type: string
+                    format: uri
+                    description: Base URL for web UI (enterprise deployments)
+                    example: https://sageox.ai
+                  claim_code:
+                    type: string
+                    description: Code for claiming team ownership (unauthenticated requests only)
+                    example: abc123xyz
+                  claim_url:
+                    type: string
+                    format: uri
+                    description: Full URL for browser-based team claiming (unauthenticated requests only)
+                    example: https://sageox.ai/team/claim?code=abc123xyz&team=team_abc123xyz
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_repo_id:
+                  value:
+                    success: false
+                    error: repo_id is required
+                invalid_repo_id:
+                  value:
+                    success: false
+                    error: repo_id must be in format repo_<uuidv7>
+                invalid_type:
+                  value:
+                    success: false
+                    error: type must be 'git'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      required:
+      - success
+      - error
+      properties:
+        success:
+          type: boolean
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT token obtained from the auth service (/api/auth/token).
+
+        Token is validated using JWKS from the auth service.
+
+        Required claims: sub (user_id), email, name, tier.
+
+        '

@@ -1,0 +1,1189 @@
+openapi: 3.1.0
+info:
+  title: SageOx Admin Devices API
+  version: 1.0.0
+  description: "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n"
+  contact:
+    name: SageOx Team
+  license:
+    name: MIT
+servers:
+- url: http://localhost:3000
+  description: Devcontainer
+- url: https://test.sageox.ai
+  description: Test
+- url: https://sageox.ai
+  description: Production
+security:
+- bearerAuth: []
+tags:
+- name: Devices
+paths:
+  /api/v1/devices:
+    get:
+      operationId: listDevices
+      summary: List devices paired to the current user
+      description: 'Returns every device the authenticated user has registered, ordered
+
+        most-recently-active first (by `last_seen_at DESC NULLS LAST`, then
+
+        `paired_at DESC`). Used by the browser dashboard on /device when
+
+        called without a user_code query param.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      responses:
+        '200':
+          description: Device list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - devices
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/paths/~1api~1v1~1devices~1register/post/responses/201/content/application~1json/schema'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error
+  /api/v1/devices/register:
+    post:
+      operationId: registerDevice
+      summary: Register (or re-register) a device after pairing
+      description: 'Called by the firmware immediately after the OAuth device-code flow
+
+        completes. Idempotent on the server: upserts the `devices` row keyed
+
+        by `(user_id, X-Device-ID)` so a re-register is safe and refreshes
+
+        server-visible facts such as `firmware_version`, `name`, and
+
+        `ota_slot_bytes`.
+
+
+        Re-register is the supported path for a device to override the
+
+        server''s legacy assumed OTA slot once newer firmware can report the
+
+        real partition size.
+
+
+        If the `X-Pairing-User-Code` header is set, the handler consumes the
+
+        matching row in `device_pairing_intents` (created by the browser''s
+
+        team picker interstitial) and assigns the device to the chosen team.
+
+        Otherwise it falls back to the user''s first team membership.
+
+
+        The `ON CONFLICT DO UPDATE` clause deliberately does NOT touch
+
+        `team_id`, so a plain re-register can never silently move a device
+
+        between teams. When an intent is consumed, a separate `UPDATE` runs
+
+        to apply the user''s explicit choice — that''s the only path that
+
+        rewrites `team_id` on an existing row.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: X-Device-ID
+        in: header
+        required: true
+        schema:
+          type: string
+        description: 'Hardware-derived stable id the device sends on every request.
+
+          For scribe: 12-char lowercase hex of the ESP32-S3 base MAC.
+
+          '
+        example: aabbccddeeff
+      - name: X-Pairing-User-Code
+        in: header
+        required: false
+        schema:
+          type: string
+        description: 'OAuth device-flow user_code the scribe displayed during pairing
+
+          and the user approved in the browser. When set, the handler
+
+          looks up the matching `device_pairing_intents` row to pick the
+
+          team_id. Only sent on the initial post-pairing register call.
+
+          '
+        example: ABCD1234
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - hardware_type
+              properties:
+                hardware_type:
+                  type: string
+                  description: Device class — matches the X-Device-Type header used elsewhere.
+                  example: scribe
+                firmware_version:
+                  type: string
+                  description: Last-reported firmware version, for support and rollout targeting.
+                  example: 0.1.0
+                name_hint:
+                  type: string
+                  description: 'Optional friendly name a client may suggest at register time
+
+                    (e.g. user-entered in a companion app). If omitted, or if
+
+                    the row already has a name set, the server''s deterministic
+
+                    default / existing name wins.
+
+                    '
+                  example: Kitchen Scribe
+                ota_slot_bytes:
+                  type: integer
+                  format: int32
+                  description: 'OTA partition (slot) size in bytes as reported by the
+
+                    device. Safe to omit on legacy firmware; the server then
+
+                    uses its legacy assumed slot until the device re-registers
+
+                    with an explicit value.
+
+                    '
+                  example: 3060016
+      responses:
+        '201':
+          description: Device registered (either freshly inserted or upserted)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - device_id
+                - user_id
+                - hardware_type
+                - config
+                - paired_at
+                - updated_at
+                properties:
+                  id:
+                    type: string
+                    description: Internal dev_<uuidv7> id
+                    example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+                  device_id:
+                    type: string
+                    description: Hardware-derived stable id (X-Device-ID header)
+                    example: aabbccddeeff
+                  user_id:
+                    type: string
+                    description: Owning user
+                    example: usr_ck3n8j2m10
+                  team_id:
+                    type: string
+                    description: Active team, if assigned
+                    example: team_abc123xyz
+                  hardware_type:
+                    type: string
+                    example: scribe
+                  firmware_version:
+                    type: string
+                    example: 0.1.0
+                  name:
+                    type: string
+                    example: Kitchen Scribe
+                  config:
+                    type: object
+                    description: Reserved for future device settings (wakeword, rewind consent, etc.)
+                    additionalProperties: true
+                  last_seen_at:
+                    type: string
+                    format: date-time
+                    description: Updated on every GetDeviceConfig poll
+                  paired_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: Missing or invalid X-Device-ID header, missing hardware_type, or malformed body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/devices/pairing-intents:
+    post:
+      operationId: createDevicePairingIntent
+      summary: Store a team selection for an in-flight device pairing
+      description: 'Called by the /device browser interstitial BEFORE
+
+        `authClient.device.approve()`, so that the scribe''s follow-up
+
+        `POST /api/v1/devices/register` call (which carries
+
+        `X-Pairing-User-Code`) can resolve the user''s team choice.
+
+
+        The row is keyed by the normalized user_code (uppercased, hyphens
+
+        and spaces stripped) and scoped to the caller''s user_id to prevent
+
+        cross-user hijack even if two users somehow receive the same
+
+        user_code. Rows auto-expire after 10 minutes — matching the OAuth
+
+        device code lifetime — and are swept periodically.
+
+
+        The caller must be a member of the target team; non-members get
+
+        403.
+
+
+        ⚠️  ROUTE ORDERING: this path MUST be registered in chi BEFORE
+
+        `/devices/{device_id}` routes, otherwise chi will try to match
+
+        `pairing-intents` as a `{device_id}` parameter and return 405.
+
+        See the comment at the registration site in cmd/server/main.go.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - user_code
+              - team_id
+              properties:
+                user_code:
+                  type: string
+                  description: 'OAuth device-flow user_code. Case and hyphen insensitive —
+
+                    server normalizes before storing.
+
+                    '
+                  example: ABCD1234
+                team_id:
+                  type: string
+                  description: Team the caller wants the device to join. Caller must be a member.
+                  example: team_abc123xyz
+      responses:
+        '200':
+          description: Intent stored (created or replaced)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - user_code
+                - team_id
+                - expires_at
+                properties:
+                  user_code:
+                    type: string
+                    description: Normalized form of the submitted code
+                    example: ABCD1234
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: UTC timestamp after which this intent is ignored
+                    example: '2026-04-05T18:30:00Z'
+        '400':
+          description: Missing user_code or invalid team_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Caller is not a member of the target team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error
+  /api/v1/devices/{device_id}:
+    get:
+      operationId: getDevice
+      summary: Fetch a single device by ID
+      description: 'Returns the full device details for the settings page. The owner
+
+        sees the complete `DeviceResponse` including the hardware MAC
+
+        (`device_id`). Team members who don''t own the device see the
+
+        `TeamDeviceResponse` projection (MAC and user_id omitted).
+
+        Everyone else gets 404 to prevent device enumeration.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Internal `dev_<uuidv7>` id
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      responses:
+        '200':
+          description: 'Device details. Shape depends on caller''s relationship to the device:
+
+            owner gets DeviceResponse, team member gets TeamDeviceResponse.
+
+            '
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/paths/~1api~1v1~1devices~1register/post/responses/201/content/application~1json/schema'
+                - type: object
+                  description: 'Sanitized device projection for team members who don''t own the device.
+
+                    Omits device_id (MAC address) and user_id to prevent hardware
+
+                    identifier and user ID leakage.
+
+                    '
+                  required:
+                  - id
+                  - is_owner
+                  - can_manage
+                  - hardware_type
+                  - paired_at
+                  - updated_at
+                  properties:
+                    id:
+                      type: string
+                      description: Internal dev_<uuidv7> id
+                      example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+                    is_owner:
+                      type: boolean
+                      description: Whether the caller owns this device
+                      example: false
+                    can_manage:
+                      type: boolean
+                      description: 'Whether the caller may perform manager-only actions on this device
+
+                        (rename, move team, shared-room mode, disconnect). Covers owner,
+
+                        policy manager_user_id, and ADR-041 device_managers grants; prefer
+
+                        this over is_owner for gating manager-only UI. See ADR-068.
+
+                        '
+                      example: false
+                    registered_by:
+                      type: string
+                      description: Display name of the user who paired this device
+                      example: Person A
+                    team_id:
+                      type: string
+                      description: Active team, if assigned
+                      example: team_abc123xyz
+                    hardware_type:
+                      type: string
+                      example: scribe
+                    firmware_version:
+                      type: string
+                      example: 0.1.0
+                    name:
+                      type: string
+                      example: Kitchen Scribe
+                    last_seen_at:
+                      type: string
+                      format: date-time
+                    paired_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+        '400':
+          description: Invalid or missing device_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found or caller has no access
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteDevice
+      summary: Logout and unpair a device
+      description: 'Revokes the device''s Better Auth session (if one is tracked via
+
+        `session_id`) and deletes the device row. Only the device owner
+
+        can perform this operation — non-owners get 404 to prevent
+
+        device enumeration.
+
+
+        Session revocation is best-effort: if it fails, the device row
+
+        is still deleted. The session will expire naturally via Better
+
+        Auth''s TTL.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Internal `dev_<uuidv7>` id
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      responses:
+        '204':
+          description: Device deleted successfully (no content)
+        '400':
+          description: Invalid or missing device_id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Device not found or caller is not the owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Database error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: updateDevice
+      summary: Rename a device or reassign it to a different team
+      description: 'Called by the browser dashboard to rename a device or move it
+
+        between teams. Caller must own the device (`devices.user_id ==
+
+        JWT.user_id`) and, when changing `team_id`, must be a member of
+
+        the target team.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Internal `dev_<uuidv7>` id
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: At least one of team_id, name, or recording_destination_id must be present
+              additionalProperties: false
+              anyOf:
+              - required:
+                - team_id
+              - required:
+                - name
+              - required:
+                - recording_destination_id
+              properties:
+                team_id:
+                  type: string
+                  description: 'New team. Pass empty string to unassign. Caller must be
+
+                    a member of the target team when non-empty.
+
+                    '
+                  example: team_abc123xyz
+                name:
+                  type: string
+                  description: Friendly device name shown on the dashboard
+                  example: Kitchen Scribe
+                recording_destination_id:
+                  type: string
+                  nullable: true
+                  description: 'The hub''s active recording destination — a prefixed
+
+                    `team_<id>` or `kb_<id>` (Knowledge Bubble). Pass `null`
+
+                    or `""` to clear it (falls back to the legacy team_id).
+
+                    Guest-scoped: must be reachable by the current user; a
+
+                    bubble destination on a hardware hub requires firmware
+
+                    >= 0.6.0 (else 409). See ADR-068/069.
+
+                    '
+                  example: kb_019d5eff-728b-7a50-a56e-9f843d8378fe
+      responses:
+        '200':
+          description: Device updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1v1~1devices~1register/post/responses/201/content/application~1json/schema'
+        '400':
+          description: Empty body, invalid device_id, team_id, or recording_destination_id
+        '401':
+          description: Authentication required
+        '403':
+          description: 'Caller cannot operate the device; or the destination is not reachable
+
+            by the caller; or a non-manager attempted to change the device name or
+
+            team (those are manager-only — see ADR-068).
+
+            '
+        '404':
+          description: Device not found
+        '409':
+          description: 'recording_destination_id is a Knowledge Bubble but either the hardware
+
+            hub''s firmware is < 0.6.0, OR the device is a shared-space device (which
+
+            can only record into a team, not a Knowledge Bubble, until session-epoch
+
+            — C1, ADR-068).
+
+            '
+        '500':
+          description: Database error
+  /api/v1/devices/{device_id}/config:
+    get:
+      operationId: getDeviceConfig
+      summary: Fetch device-scoped config — scribe poll endpoint
+      description: 'Lean projection of the device row that the firmware polls at boot,
+
+        after auth refresh, and periodically while idle. Returns the active
+
+        `team_id` the device should apply. Touches `last_seen_at` on every
+
+        successful call.
+
+
+        Ownership is enforced in the handler (404 for nonexistent rows,
+
+        403 for rows belonging to a different user, both distinct from the
+
+        404 returned by the feature flag being off).
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Internal `dev_<uuidv7>` id returned by RegisterDevice
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      responses:
+        '200':
+          description: Device config
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - device_id
+                - updated_at
+                properties:
+                  id:
+                    type: string
+                    example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+                  device_id:
+                    type: string
+                    description: Hardware X-Device-ID echoed back
+                    example: aabbccddeeff
+                  active_team_id:
+                    type: string
+                    description: The team the device should apply. Empty if user has no teams.
+                    example: team_abc123xyz
+                  name:
+                    type: string
+                    example: Kitchen Scribe
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: Use this to skip no-op NVS writes when polling periodically
+                    example: '2026-04-05T17:03:11Z'
+                  flags:
+                    type: object
+                    description: 'PostHog feature flags evaluated for the device owner. Absent
+
+                      when PostHog is unreachable — firmware should fall back to
+
+                      NVS-cached values. All values are boolean.
+
+                      '
+                    additionalProperties:
+                      type: boolean
+                    example:
+                      rewind-enabled: true
+                  settings:
+                    type: object
+                    description: 'Non-boolean tunables from the device''s own config blob (the
+
+                      JSONB `config` column). Absent when no settings are
+
+                      configured. Editable via PATCH /devices/{device_id}.
+
+                      '
+                    additionalProperties: true
+                    example:
+                      silence-threshold-db: -40
+                      upload-chunk-size-kb: 64
+                  shared_space_mode:
+                    type: boolean
+                    description: 'When true, firmware enforces idle auto-logout and
+
+                      force-disables rewind so the device can be safely
+
+                      shared across multiple walk-up users (e.g. a
+
+                      conference-room scribe). Sourced from the
+
+                      `device_policy` table keyed by hardware device_id;
+
+                      defaults to `false` for any device with no policy
+
+                      row. Always emitted (no omitempty) so the server is
+
+                      authoritative on every poll.
+
+                      '
+                    example: false
+                  auto_logout_minutes:
+                    type: integer
+                    minimum: 1
+                    maximum: 60
+                    description: 'Idle threshold in minutes. Omitted when no value is
+
+                      set; firmware applies its built-in default (5).
+
+                      Server validates 1..60 on PATCH; CHECK constraint
+
+                      enforces the same range as defense in depth.
+
+                      '
+                    example: 5
+                  manager_user_id:
+                    type: string
+                    description: 'User who manages device policy (toggles
+
+                      shared_space_mode, sets auto_logout_minutes).
+
+                      Pinned to the first pairer of this hardware via
+
+                      INSERT ... ON CONFLICT DO NOTHING; preserved
+
+                      across walk-up re-pairs in shared mode. Falls
+
+                      back to `devices.user_id` for legacy rows with no
+
+                      policy entry. Firmware compares JWT.sub against
+
+                      this value to gate manager-only actions.
+
+                      '
+                    example: usr_ck3n8j2m10
+                  manager_display_name:
+                    type: string
+                    description: 'Human-readable name (`user.name`) of whoever
+
+                      `manager_user_id` points at. Lets the firmware
+
+                      render messages like "Ask <name> to change this
+
+                      setting" when a walk-up user hits a manager-only
+
+                      ACL. Display name only — email is intentionally
+
+                      NOT exposed here; matches the privacy posture of
+
+                      `registered_by` on the team-devices response.
+
+                      Omitted when the underlying user row is missing
+
+                      (deleted account) so callers fall back to the
+
+                      opaque `manager_user_id`.
+
+                      '
+                    example: Alice Anderson
+        '400':
+          description: Invalid or missing device_id
+        '401':
+          description: Authentication required
+        '404':
+          description: 'Device not found, or device exists but belongs to a different user.
+
+            Both cases return 404 to prevent enumeration — callers cannot
+
+            distinguish "doesn''t exist" from "not yours".
+
+            '
+        '500':
+          description: Database error
+    patch:
+      operationId: updateDeviceConfig
+      summary: Toggle shared-space-mode policy and idle threshold
+      description: 'Mutates the per-hardware `device_policy` row. Authorized to the
+
+        device manager (`device_policy.manager_user_id`) OR an active
+
+        member of the device''s `team_id`. Strict body decoding rejects
+
+        unknown fields with 400 so typos in policy keys surface fast
+
+        instead of becoming silent no-ops.
+
+
+        Pointer-style optional fields: omit a field to preserve its
+
+        existing value (COALESCE on the upsert). Sending
+
+        `auto_logout_minutes: 0` is a 400, not a no-op — use omission to
+
+        mean "unchanged" and the firmware default to mean "no value
+
+        set".
+
+
+        `manager_user_id` is intentionally not mutable through this
+
+        endpoint. It is set on the very first RegisterDevice call for
+
+        the hardware and is immutable until a future transfer-of-manager
+
+        flow ships.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Internal `dev_<uuidv7>` id
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                shared_space_mode:
+                  type: boolean
+                  description: Master switch for shared-space behavior. Server is the source of truth.
+                  example: true
+                auto_logout_minutes:
+                  type: integer
+                  minimum: 1
+                  maximum: 60
+                  description: Idle threshold; firmware default is 5 if unset.
+                  example: 10
+              minProperties: 1
+      responses:
+        '204':
+          description: Policy updated. Firmware picks up the change on its next config poll (~60s).
+        '400':
+          description: 'Invalid request — malformed body, unknown field,
+
+            out-of-range `auto_logout_minutes`, or empty body (need at
+
+            least one of `shared_space_mode`/`auto_logout_minutes`).
+
+            '
+        '401':
+          description: Authentication required
+        '403':
+          description: 'A non-manager attempted to change a manager-only policy field
+
+            (`shared_space_mode`, `operational_metrics_enabled`, or
+
+            `auto_logout_minutes`). Session-level fields (`cast_tv_id`,
+
+            `privacy_mode`) remain settable by any current user — see ADR-068.
+
+            '
+        '404':
+          description: 'Device not found, or caller is neither the manager nor a
+
+            member of the device''s team. 404 (not 403) to prevent
+
+            enumeration — hardware device_ids derive from MACs in
+
+            predictable Espressif OUI space.
+
+            '
+        '500':
+          description: Database error
+  /api/v1/devices/{device_id}/destinations:
+    get:
+      operationId: getDeviceDestinations
+      summary: List a hub's recording destinations and reported peripherals (Room OS)
+      description: 'Lean, ESP32-safe list of the recording destinations (teams +
+
+        Knowledge Bubbles) the CURRENT USER can reach, the active one, and
+
+        — Room OS (firmware >= 0.6.0 for a hardware hub; always for a
+
+        software hub) — the peripherals the hub has reported. Auth:
+
+        JWT + canUseDevice (guest-scoped); 404 (not 403) on unauthorized to
+
+        block device-id enumeration. See ADR-069.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Internal `dev_<uuidv7>` id
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      responses:
+        '200':
+          description: Reachable destinations, the active selection, and reported peripherals
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - destinations
+                - peripherals
+                properties:
+                  destinations:
+                    type: array
+                    description: Always present (empty array, never null)
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - name
+                      - is_public
+                      properties:
+                        id:
+                          type: string
+                          description: Prefixed `team_…` or `kb_…` id
+                          example: kb_019d5eff-728b-7a50-a56e-9f843d8378fe
+                        name:
+                          type: string
+                          example: Engineering
+                        is_public:
+                          type: boolean
+                  active_id:
+                    type: string
+                    description: The active destination id (one of destinations[].id); omitted when none or no longer reachable
+                    example: team_abc123xyz
+                  peripherals:
+                    type: array
+                    description: Always present (empty array when none or surface withheld for a pre-0.6.0 hardware hub)
+                    items:
+                      allOf:
+                      - $ref: '#/paths/~1api~1v1~1devices~1%7Bdevice_id%7D~1peripherals~1%7Bexternal_id%7D/put/requestBody/content/application~1json/schema'
+                      - type: object
+                        required:
+                        - external_id
+        '400':
+          description: Invalid or missing device_id
+        '401':
+          description: Authentication required
+        '404':
+          description: Device not found or caller not authorized
+        '500':
+          description: Database error
+  /api/v1/devices/{device_id}/peripherals/{external_id}:
+    put:
+      operationId: reportDevicePeripheral
+      summary: Report a paired peripheral (Room OS, hub-reported)
+      description: 'The hub (firmware on a hardware hub, the app on a software hub)
+
+        reports a peripheral paired to it. Stored per-hardware under
+
+        `physical_devices.metadata.peripherals`, keyed by `external_id`,
+
+        with a clobber-safe `jsonb_set`. Auth: JWT + canManageDevice (strict
+
+        manager); 404 (not 403) on unauthorized. See ADR-069.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      - name: external_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: The peripheral's native id from the hub's perspective (a foreign id, NOT a SageOx prefixed id)
+        example: chromecast-7c8b9a01
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: 'A device paired to a hub (ADR-069). `types[]` and `protocols[]`
+
+                are an OPEN kebab-slug vocabulary (never enums) so new classes
+
+                (xr, llm, whiteboard, …) need no schema change. On a PUT the
+
+                external_id is the path param and may be omitted from the body.
+
+                '
+              required:
+              - name
+              - types
+              - direction
+              properties:
+                external_id:
+                  type: string
+                  description: The peripheral's native id from the hub's perspective (the pairing key)
+                  example: chromecast-7c8b9a01
+                name:
+                  type: string
+                  example: Boardroom TV
+                types:
+                  type: array
+                  items:
+                    type: string
+                  description: Capability slugs (open vocab) — display, speaker, microphone, projector, holographic, whiteboard, headset, camera, xr, glasses, wearable, llm, compute, controller, …
+                  example:
+                  - display
+                  - microphone
+                direction:
+                  type: string
+                  enum:
+                  - input
+                  - output
+                  - both
+                  description: input (hub captures), output (hub drives), both
+                protocols:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                  - chromecast
+                  - airplay
+                network:
+                  type: object
+                  description: The network the peripheral was paired on (the v1 "room")
+                  properties:
+                    bssid:
+                      type: string
+                      example: aa:bb:cc:dd:ee:11
+                    name:
+                      type: string
+                      example: Conf-A 5G
+                paired_at:
+                  type: string
+                  format: date-time
+                last_seen:
+                  type: string
+                  format: date-time
+                default_for:
+                  type: array
+                  items:
+                    type: string
+                tenure:
+                  type: string
+                  enum:
+                  - fixture
+                  - transient
+                  description: fixture = durable room device (default); transient = an ephemeral control client (a user's app)
+      responses:
+        '204':
+          description: Peripheral stored
+        '400':
+          description: Invalid body, external_id, or device_id
+        '401':
+          description: Authentication required
+        '404':
+          description: Device not found or caller not a manager
+        '500':
+          description: Database error
+    delete:
+      operationId: deleteDevicePeripheral
+      summary: Remove a paired peripheral (Room OS, admin)
+      description: 'The admin removes a peripheral from the hub. Idempotent (removing an
+
+        absent peripheral is a no-op). Auth: JWT + canManageDevice; 404 on
+
+        unauthorized.
+
+        '
+      tags:
+      - Devices
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: dev_019d5eff-728b-7a50-a56e-9f843d8378fe
+      - name: external_id
+        in: path
+        required: true
+        schema:
+          type: string
+        example: chromecast-7c8b9a01
+      responses:
+        '204':
+          description: Peripheral removed (idempotent)
+        '400':
+          description: Invalid or missing external_id or device_id
+        '401':
+          description: Authentication required
+        '404':
+          description: Device not found or caller not a manager
+        '500':
+          description: Database error
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      required:
+      - success
+      - error
+      properties:
+        success:
+          type: boolean
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT token obtained from the auth service (/api/auth/token).
+
+        Token is validated using JWKS from the auth service.
+
+        Required claims: sub (user_id), email, name, tier.
+
+        '

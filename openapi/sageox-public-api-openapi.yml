@@ -1,0 +1,577 @@
+openapi: 3.1.0
+info:
+  title: SageOx Admin Public API
+  version: 1.0.0
+  description: "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n"
+  contact:
+    name: SageOx Team
+  license:
+    name: MIT
+servers:
+- url: http://localhost:3000
+  description: Devcontainer
+- url: https://test.sageox.ai
+  description: Test
+- url: https://sageox.ai
+  description: Production
+security:
+- bearerAuth: []
+tags:
+- name: Public
+  description: 'Unauthenticated endpoints for public-facing data. Returns team profiles, public recording metadata, shared conventions, and repository status without requiring authentication. Rate limited per IP.
+
+    '
+paths:
+  /api/v1/public/repos/{repo_id}:
+    get:
+      operationId: getPublicRepo
+      summary: Get public repository information
+      description: 'Retrieves basic public information about a repository.
+
+        Does not include sensitive team information or access control details.
+
+
+        **Authentication:** Not required (public endpoint)
+
+        **Rate limit:** Tiered per IP (60 req/min unauthenticated, 300 req/min authenticated)
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: repo_id
+        required: true
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+        description: Repository ID to retrieve
+      responses:
+        '200':
+          description: Repository information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - type
+                properties:
+                  id:
+                    type: string
+                    example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                  type:
+                    type: string
+                    enum:
+                    - git
+                    example: git
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-18T10:30:00Z'
+                  is_public:
+                    type: boolean
+                    example: false
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/repos/{repo_id}/merge-candidates:
+    get:
+      operationId: getRepoMergeCandidates
+      summary: Get repositories that could be merged
+      description: 'Returns a list of repositories with matching remote hashes that could be merged
+
+        into this repository. Respects `is_public` flag for fork protection.
+
+
+        **Use case:** Help users identify duplicate registrations that should be consolidated.
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: repo_id
+        required: true
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+        description: Repository ID to find merge candidates for
+      responses:
+        '200':
+          description: List of merge candidates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    repo_id:
+                      type: string
+                      example: repo_01934f5b-1234-7abc-9012-def456789012
+                    team_id:
+                      type: string
+                      example: team_def456uvw
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: '2025-12-10T08:15:00Z'
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/repos/{repo_id}/has-merge-candidates:
+    get:
+      operationId: hasRepoMergeCandidates
+      summary: Check if merge candidates exist
+      description: 'Lightweight check to determine if this repository has merge candidates.
+
+        Returns a boolean without fetching full candidate details.
+
+
+        **Use case:** Show UI indication of potential merges without expensive list fetch.
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: repo_id
+        required: true
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+        description: Repository ID to check
+      responses:
+        '200':
+          description: Merge candidate status determined
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - has_candidates
+                properties:
+                  has_candidates:
+                    type: boolean
+                    description: Whether merge candidates exist for this repo
+                    example: true
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/repos/{repo_id}/doctor:
+    get:
+      operationId: getRepoDoctorInfo
+      summary: Run repository diagnostics
+      description: 'Runs diagnostic checks on a repository including health status,
+
+        configuration validation, and merge analysis.
+
+
+        **Diagnostics included:**
+
+        - Repository status and metadata
+
+        - Team associations
+
+        - Merge candidate analysis
+
+        - Git configuration validation
+
+        - Feature availability
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: repo_id
+        required: true
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+        description: Repository ID to diagnose
+      responses:
+        '200':
+          description: Diagnostic results retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  repo_id:
+                    type: string
+                    example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                  status:
+                    type: string
+                    enum:
+                    - healthy
+                    - degraded
+                    - error
+                    example: healthy
+                  checks:
+                    type: object
+                    properties:
+                      metadata_valid:
+                        type: boolean
+                        example: true
+                      teams_accessible:
+                        type: boolean
+                        example: true
+                      merge_analysis:
+                        type: object
+                        properties:
+                          has_candidates:
+                            type: boolean
+                            example: true
+                          candidate_count:
+                            type: integer
+                            example: 1
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/teams/{team_id}:
+    get:
+      operationId: getPublicTeam
+      summary: Get public team information
+      description: 'Retrieves basic public information about a team.
+
+        Does not include sensitive member or access control information.
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: team_id
+        required: true
+        schema:
+          type: string
+          pattern: ^team_
+          example: team_abc123xyz
+        description: Team ID to retrieve
+      responses:
+        '200':
+          description: Team information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - slug
+                - name
+                properties:
+                  id:
+                    type: string
+                    example: team_abc123xyz
+                  slug:
+                    type: string
+                    description: URL-safe team identifier
+                    example: my-team
+                  name:
+                    type: string
+                    example: My Team
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-18T10:30:00Z'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/teams/{team_id}/repos:
+    get:
+      operationId: getTeamRepos
+      summary: Get team's repositories
+      description: 'Lists all repositories associated with a team (public view).
+
+        Does not include private or access-controlled repository details.
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: team_id
+        required: true
+        schema:
+          type: string
+          pattern: ^team_
+          example: team_abc123xyz
+        description: Team ID to list repositories for
+      responses:
+        '200':
+          description: List of team repositories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    repo_id:
+                      type: string
+                      example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                    type:
+                      type: string
+                      enum:
+                      - git
+                      example: git
+                    created_at:
+                      type: string
+                      format: date-time
+                      example: '2025-12-18T10:30:00Z'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/teams/{team_id}/merge-candidates:
+    get:
+      operationId: getTeamMergeCandidates
+      summary: Get team's merge candidates
+      description: 'Returns repositories from this team that have merge candidates
+
+        (duplicate registrations that could be consolidated).
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: team_id
+        required: true
+        schema:
+          type: string
+          pattern: ^team_
+          example: team_abc123xyz
+        description: Team ID to analyze for merge candidates
+      responses:
+        '200':
+          description: List of repositories with merge candidates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    repo_id:
+                      type: string
+                      example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                    merge_candidates:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          repo_id:
+                            type: string
+                            example: repo_01934f5b-1234-7abc-9012-def456789012
+                          team_id:
+                            type: string
+                            example: team_def456uvw
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/public/teams/{team_id}/info:
+    get:
+      operationId: getTeamPublicInfo
+      summary: Get team public info for join page
+      description: 'Returns information needed for team join/signup page.
+
+        Includes team name, member count, and visibility status.
+
+
+        **Use case:** Public join page showing team details without authentication.
+
+
+        **Authentication:** Not required
+
+        **Rate limit:** Tiered per IP
+
+        '
+      tags:
+      - Public
+      security: []
+      parameters:
+      - in: path
+        name: team_id
+        required: true
+        schema:
+          type: string
+          pattern: ^team_
+          example: team_abc123xyz
+        description: Team ID to retrieve info for
+      responses:
+        '200':
+          description: Team public information retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - name
+                - slug
+                - member_count
+                properties:
+                  name:
+                    type: string
+                    description: Team display name
+                    example: Product Engineering
+                  slug:
+                    type: string
+                    description: URL-safe team identifier
+                    example: product-engineering
+                  member_count:
+                    type: integer
+                    description: Number of team members
+                    example: 12
+                  description:
+                    type: string
+                    description: Team description or tagline
+                    nullable: true
+                    example: Building the next generation platform
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      required:
+      - success
+      - error
+      properties:
+        success:
+          type: boolean
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT token obtained from the auth service (/api/auth/token).
+
+        Token is validated using JWKS from the auth service.
+
+        Required claims: sub (user_id), email, name, tier.
+
+        '

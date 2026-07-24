@@ -1,0 +1,1394 @@
+openapi: 3.1.0
+info:
+  title: SageOx Admin Photos API
+  version: 1.0.0
+  description: "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n"
+  contact:
+    name: SageOx Team
+  license:
+    name: MIT
+servers:
+- url: http://localhost:3000
+  description: Devcontainer
+- url: https://test.sageox.ai
+  description: Test
+- url: https://sageox.ai
+  description: Production
+security:
+- bearerAuth: []
+tags:
+- name: Photos
+  description: 'Upload and manage photos with automatic OCR text extraction. Photos can be scoped to a repository (linked to recordings/discussions) or a team (shared resources). Uses presigned URLs for direct-to-storage uploads.
+
+    '
+paths:
+  /api/v1/repos/{repo_id}/photos:
+    post:
+      operationId: requestRepoPhotoUploadURL
+      summary: Request upload URL for a photo
+      description: 'Generates a presigned URL for uploading a photo to a repository.
+
+
+        The returned URL can be used to directly upload an image file.
+
+        After successful upload, call POST /api/v1/repos/{repo_id}/photos/{img_id}
+
+        to create the photo metadata record.
+
+
+        Supported image types: JPEG, PNG, GIF, WebP, SVG, HEIC, HEIF, TIFF
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: repo_id
+        in: path
+        required: true
+        description: Repository ID (repo_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - filename
+              - content_type
+              properties:
+                filename:
+                  type: string
+                  description: Original filename for the image
+                  example: whiteboard_diagram.png
+                content_type:
+                  type: string
+                  description: MIME type of the image
+                  enum:
+                  - image/jpeg
+                  - image/png
+                  - image/gif
+                  - image/webp
+                  - image/svg+xml
+                  - image/heic
+                  - image/heif
+                  - image/tiff
+                  example: image/png
+                size_bytes:
+                  type: integer
+                  format: int64
+                  description: File size in bytes (optional, for validation)
+                  example: 1048576
+      responses:
+        '200':
+          description: Presigned upload URL generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - upload_url
+                - image_id
+                - expires_at
+                - storage_key
+                properties:
+                  upload_url:
+                    type: string
+                    format: uri
+                    description: Presigned URL for uploading the image file
+                    example: https://storage.example.com/upload?signed=...
+                  image_id:
+                    type: string
+                    description: Generated image ID for this photo
+                    pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                    example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: Expiration time for the presigned URL (typically 1 hour)
+                    example: '2025-12-18T17:30:00Z'
+                  storage_key:
+                    type: string
+                    description: Internal S3 storage key for the image
+                    example: repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                  max_size_bytes:
+                    type: integer
+                    format: int64
+                    description: Maximum file size allowed for upload
+                    example: 104857600
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_filename:
+                  value:
+                    success: false
+                    error: filename is required
+                invalid_content_type:
+                  value:
+                    success: false
+                    error: content_type must be a valid image type (image/jpeg, image/png, image/gif, image/webp)
+                invalid_repo_id:
+                  value:
+                    success: false
+                    error: invalid repo_id format
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listRepoPhotos
+      summary: List photos in a repository
+      description: 'Retrieves a paginated list of photos in a repository.
+
+        Supports optional filtering by recording ID.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: repo_id
+        in: path
+        required: true
+        description: Repository ID (repo_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+      - name: recording_id
+        in: query
+        required: false
+        description: Filter photos by recording ID
+        schema:
+          type: string
+          example: rec_01934f5c-1234-7def
+      - name: limit
+        in: query
+        required: false
+        description: Maximum number of photos to return (default 50, max 100)
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+          example: 20
+      - name: offset
+        in: query
+        required: false
+        description: Number of photos to skip for pagination (default 0)
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 0
+      responses:
+        '200':
+          description: Photos retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - photos
+                - pagination
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+              examples:
+                success:
+                  value:
+                    photos:
+                    - id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                      repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                      filename: diagram.png
+                      content_type: image/png
+                      size_bytes: 524288
+                      width: 1920
+                      height: 1080
+                      url: https://storage.example.com/repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                      created_at: '2025-12-18T16:30:00Z'
+                      updated_at: '2025-12-18T16:30:00Z'
+                      created_by: user_abc123xyz
+                    pagination:
+                      total: 42
+                      limit: 20
+                      offset: 0
+                      hasMore: true
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/repos/{repo_id}/photos/{img_id}:
+    post:
+      operationId: createRepoPhoto
+      summary: Create photo metadata after upload
+      description: 'Creates a photo metadata record after the image file has been uploaded
+
+        via the presigned URL from POST /api/v1/repos/{repo_id}/photos.
+
+
+        This endpoint finalizes the photo creation, allowing you to add metadata
+
+        such as title, description, and metadata. If OCR is enabled, processing
+
+        is triggered asynchronously.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: repo_id
+        in: path
+        required: true
+        description: Repository ID (repo_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID returned from upload URL request (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  description: Original filename (optional, uses request value if provided)
+                  example: whiteboard_design.png
+                content_type:
+                  type: string
+                  description: MIME type of the image
+                  example: image/png
+                size_bytes:
+                  type: integer
+                  format: int64
+                  description: File size in bytes
+                  example: 1048576
+                width:
+                  type: integer
+                  description: Image width in pixels
+                  example: 1920
+                height:
+                  type: integer
+                  description: Image height in pixels
+                  example: 1080
+                storage_key:
+                  type: string
+                  description: S3 storage key (from upload response)
+                  example: repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                recording_id:
+                  type: string
+                  description: Associated recording ID if photo was captured during a recording
+                  example: rec_01934f5c-1234-7def
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Capture timestamp (from EXIF or manual entry)
+                  example: '2025-12-18T16:25:00Z'
+                metadata:
+                  type: object
+                  description: Custom metadata (flexible key-value pairs)
+                  additionalProperties: true
+                  example:
+                    category: whiteboard
+                    session: design-review
+      responses:
+        '201':
+          description: Photo metadata created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+              example:
+                id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                filename: whiteboard_design.png
+                content_type: image/png
+                size_bytes: 1048576
+                width: 1920
+                height: 1080
+                storage_key: repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                url: https://storage.example.com/repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                metadata:
+                  category: whiteboard
+                  session: design-review
+                created_by: user_abc123xyz
+                created_at: '2025-12-18T16:30:00Z'
+                updated_at: '2025-12-18T16:30:00Z'
+        '400':
+          description: Invalid request or image ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_img_id:
+                  value:
+                    success: false
+                    error: invalid img_id format (expected img_<uuidv7>)
+                invalid_dimensions:
+                  value:
+                    success: false
+                    error: width and height must be greater than 0
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Photo already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: getRepoPhoto
+      summary: Get photo details
+      description: 'Retrieves a photo by ID, including metadata, download URL, and OCR text
+
+        if available.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: repo_id
+        in: path
+        required: true
+        description: Repository ID (repo_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      responses:
+        '200':
+          description: Photo retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - content_type
+                - size_bytes
+                - width
+                - height
+                - url
+                - created_at
+                - updated_at
+                - created_by
+                properties:
+                  id:
+                    type: string
+                    description: Photo ID (img_<uuidv7>)
+                    pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                    example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                  repo_id:
+                    type: string
+                    description: Repository ID (if repo-scoped)
+                    example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                    nullable: true
+                  team_id:
+                    type: string
+                    description: Team ID (if team-scoped)
+                    example: team_abc123xyz
+                    nullable: true
+                  recording_id:
+                    type: string
+                    description: Associated recording ID if photo was captured during a recording
+                    example: rec_01934f5c-1234-7def
+                    nullable: true
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Capture timestamp from EXIF or manual entry
+                    example: '2025-12-18T16:25:00Z'
+                    nullable: true
+                  filename:
+                    type: string
+                    description: Original filename
+                    example: whiteboard_diagram.png
+                  content_type:
+                    type: string
+                    description: MIME type of the image
+                    enum:
+                    - image/jpeg
+                    - image/png
+                    - image/gif
+                    - image/webp
+                    - image/svg+xml
+                    - image/heic
+                    - image/heif
+                    - image/tiff
+                    example: image/png
+                  size_bytes:
+                    type: integer
+                    format: int64
+                    description: File size in bytes
+                    example: 1048576
+                  width:
+                    type: integer
+                    description: Image width in pixels
+                    example: 1920
+                  height:
+                    type: integer
+                    description: Image height in pixels
+                    example: 1080
+                  storage_key:
+                    type: string
+                    description: Internal S3 storage key
+                    example: repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                  url:
+                    type: string
+                    format: uri
+                    description: Download URL for the image
+                    example: https://storage.example.com/repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                  metadata:
+                    type: object
+                    description: 'Custom metadata and extracted content.
+
+                      May include ocr_text, exif data, and other system-extracted fields.
+
+                      '
+                    additionalProperties: true
+                    example:
+                      category: whiteboard
+                      ocr_text: System Architecture Components...
+                      exif:
+                        make: Camera Manufacturer
+                        model: Camera Model
+                        iso_speed: 400
+                  created_by:
+                    type: string
+                    description: User ID of the photo uploader
+                    example: user_abc123xyz
+                  created_at:
+                    type: string
+                    format: date-time
+                    description: Creation timestamp
+                    example: '2025-12-18T16:30:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    description: Last update timestamp
+                    example: '2025-12-18T16:30:00Z'
+              example:
+                id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                filename: whiteboard_design.png
+                content_type: image/png
+                size_bytes: 1048576
+                width: 1920
+                height: 1080
+                storage_key: repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                url: https://storage.example.com/repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                metadata:
+                  category: whiteboard
+                  ocr_text: 'System Architecture\nComponents: API, Database, Cache'
+                created_by: user_abc123xyz
+                created_at: '2025-12-18T16:30:00Z'
+                updated_at: '2025-12-18T16:30:00Z'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: updateRepoPhoto
+      summary: Update photo metadata
+      description: 'Updates photo metadata such as filename, custom metadata, or recording association.
+
+        Partial updates are supported - only provided fields are modified.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: repo_id
+        in: path
+        required: true
+        description: Repository ID (repo_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  description: Updated filename
+                  example: architecture_diagram_v2.png
+                recording_id:
+                  type: string
+                  description: Associated recording ID
+                  example: rec_01934f5c-1234-7def
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Updated capture timestamp
+                  example: '2025-12-18T16:25:00Z'
+                metadata:
+                  type: object
+                  description: Updated custom metadata (merged with existing)
+                  additionalProperties: true
+                  example:
+                    category: architecture
+                    version: 2
+                    status: approved
+      responses:
+        '200':
+          description: Photo metadata updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+              example:
+                id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                repo_id: repo_01934f5a-8b9c-7def-b012-3456789abcde
+                filename: architecture_diagram_v2.png
+                content_type: image/png
+                size_bytes: 1048576
+                width: 1920
+                height: 1080
+                storage_key: repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                url: https://storage.example.com/repos/repo_01934f5a-8b9c-7def/img_01934f5b-9d3e-7abc.png
+                metadata:
+                  category: architecture
+                  version: 2
+                  status: approved
+                created_by: user_abc123xyz
+                created_at: '2025-12-18T16:30:00Z'
+                updated_at: '2025-12-18T16:35:00Z'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteRepoPhoto
+      summary: Delete a photo
+      description: 'Deletes a photo and its associated data from the repository.
+
+        This operation is permanent.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: repo_id
+        in: path
+        required: true
+        description: Repository ID (repo_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^repo_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: repo_01934f5a-8b9c-7def-b012-3456789abcde
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      responses:
+        '204':
+          description: Photo deleted successfully (no content)
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/photos:
+    post:
+      operationId: requestTeamPhotoUploadURL
+      summary: Request upload URL for a team photo
+      description: 'Generates a presigned URL for uploading a photo to a team.
+
+
+        The returned URL can be used to directly upload an image file.
+
+        After successful upload, call POST /api/v1/teams/{team_id}/photos/{img_id}
+
+        to create the photo metadata record.
+
+
+        Supported image types: JPEG, PNG, GIF, WebP, SVG, HEIC, HEIF, TIFF
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        description: Team ID
+        schema:
+          type: string
+          example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - filename
+              - content_type
+              properties:
+                filename:
+                  type: string
+                  description: Original filename for the image
+                  example: team_whiteboard.png
+                content_type:
+                  type: string
+                  description: MIME type of the image
+                  enum:
+                  - image/jpeg
+                  - image/png
+                  - image/gif
+                  - image/webp
+                  - image/svg+xml
+                  - image/heic
+                  - image/heif
+                  - image/tiff
+                  example: image/png
+                size_bytes:
+                  type: integer
+                  format: int64
+                  description: File size in bytes (optional, for validation)
+                  example: 1048576
+      responses:
+        '200':
+          description: Presigned upload URL generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - upload_url
+                - image_id
+                - expires_at
+                - storage_key
+                properties:
+                  upload_url:
+                    type: string
+                    format: uri
+                    description: Presigned URL for uploading the image file
+                    example: https://storage.example.com/upload?signed=...
+                  image_id:
+                    type: string
+                    description: Generated image ID for this photo
+                    pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+                    example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: Expiration time for the presigned URL (typically 1 hour)
+                    example: '2025-12-18T17:30:00Z'
+                  storage_key:
+                    type: string
+                    description: Internal S3 storage key for the image
+                    example: teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                  max_size_bytes:
+                    type: integer
+                    format: int64
+                    description: Maximum file size allowed for upload
+                    example: 104857600
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_filename:
+                  value:
+                    success: false
+                    error: filename is required
+                invalid_content_type:
+                  value:
+                    success: false
+                    error: content_type must be a valid image type (image/jpeg, image/png, image/gif, image/webp)
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listTeamPhotos
+      summary: List photos in a team
+      description: 'Retrieves a paginated list of photos in a team.
+
+        Supports optional filtering by recording ID.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        description: Team ID
+        schema:
+          type: string
+          example: team_abc123xyz
+      - name: recording_id
+        in: query
+        required: false
+        description: Filter photos by recording ID
+        schema:
+          type: string
+          example: rec_01934f5c-1234-7def
+      - name: limit
+        in: query
+        required: false
+        description: Maximum number of photos to return (default 50, max 100)
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 50
+          example: 20
+      - name: offset
+        in: query
+        required: false
+        description: Number of photos to skip for pagination (default 0)
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          example: 0
+      responses:
+        '200':
+          description: Photos retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - photos
+                - pagination
+                properties:
+                  photos:
+                    type: array
+                    items:
+                      $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+                  pagination:
+                    $ref: '#/components/schemas/PaginationMeta'
+              examples:
+                success:
+                  value:
+                    photos:
+                    - id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                      team_id: team_abc123xyz
+                      filename: team_meeting_notes.png
+                      content_type: image/png
+                      size_bytes: 524288
+                      width: 1920
+                      height: 1080
+                      url: https://storage.example.com/teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                      created_at: '2025-12-18T16:30:00Z'
+                      updated_at: '2025-12-18T16:30:00Z'
+                      created_by: user_abc123xyz
+                    pagination:
+                      total: 15
+                      limit: 20
+                      offset: 0
+                      hasMore: false
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/photos/{img_id}:
+    post:
+      operationId: createTeamPhoto
+      summary: Create team photo metadata after upload
+      description: 'Creates a photo metadata record after the image file has been uploaded
+
+        via the presigned URL from POST /api/v1/teams/{team_id}/photos.
+
+
+        This endpoint finalizes the photo creation, allowing you to add metadata
+
+        such as title, description, and recording association. If OCR is enabled,
+
+        processing is triggered asynchronously.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        description: Team ID
+        schema:
+          type: string
+          example: team_abc123xyz
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID returned from upload URL request (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  description: Original filename (optional, uses request value if provided)
+                  example: meeting_notes.png
+                content_type:
+                  type: string
+                  description: MIME type of the image
+                  example: image/png
+                size_bytes:
+                  type: integer
+                  format: int64
+                  description: File size in bytes
+                  example: 1048576
+                width:
+                  type: integer
+                  description: Image width in pixels
+                  example: 1920
+                height:
+                  type: integer
+                  description: Image height in pixels
+                  example: 1080
+                storage_key:
+                  type: string
+                  description: S3 storage key (from upload response)
+                  example: teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                recording_id:
+                  type: string
+                  description: Associated recording ID if photo was captured during a recording
+                  example: rec_01934f5c-1234-7def
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Capture timestamp (from EXIF or manual entry)
+                  example: '2025-12-18T16:25:00Z'
+                metadata:
+                  type: object
+                  description: Custom metadata (flexible key-value pairs)
+                  additionalProperties: true
+                  example:
+                    meeting_type: standup
+                    project: platform-redesign
+      responses:
+        '201':
+          description: Photo metadata created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+              example:
+                id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                team_id: team_abc123xyz
+                filename: meeting_notes.png
+                content_type: image/png
+                size_bytes: 1048576
+                width: 1920
+                height: 1080
+                storage_key: teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                url: https://storage.example.com/teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                metadata:
+                  meeting_type: standup
+                  project: platform-redesign
+                created_by: user_abc123xyz
+                created_at: '2025-12-18T16:30:00Z'
+                updated_at: '2025-12-18T16:30:00Z'
+        '400':
+          description: Invalid request or image ID format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalid_img_id:
+                  value:
+                    success: false
+                    error: invalid img_id format (expected img_<uuidv7>)
+                invalid_dimensions:
+                  value:
+                    success: false
+                    error: width and height must be greater than 0
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Photo already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: getTeamPhoto
+      summary: Get team photo details
+      description: 'Retrieves a team photo by ID, including metadata, download URL, and OCR text
+
+        if available.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        description: Team ID
+        schema:
+          type: string
+          example: team_abc123xyz
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      responses:
+        '200':
+          description: Photo retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+              example:
+                id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                team_id: team_abc123xyz
+                filename: meeting_notes.png
+                content_type: image/png
+                size_bytes: 1048576
+                width: 1920
+                height: 1080
+                storage_key: teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                url: https://storage.example.com/teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                metadata:
+                  meeting_type: standup
+                  ocr_text: 'Action Items: Review API design, Test payment flow, Deploy v2.0'
+                created_by: user_abc123xyz
+                created_at: '2025-12-18T16:30:00Z'
+                updated_at: '2025-12-18T16:30:00Z'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      operationId: updateTeamPhoto
+      summary: Update team photo metadata
+      description: 'Updates team photo metadata such as filename, custom metadata, or recording association.
+
+        Partial updates are supported - only provided fields are modified.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        description: Team ID
+        schema:
+          type: string
+          example: team_abc123xyz
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  description: Updated filename
+                  example: standup_dec18_final.png
+                recording_id:
+                  type: string
+                  description: Associated recording ID
+                  example: rec_01934f5c-1234-7def
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Updated capture timestamp
+                  example: '2025-12-18T10:30:00Z'
+                metadata:
+                  type: object
+                  description: Updated custom metadata (merged with existing)
+                  additionalProperties: true
+                  example:
+                    meeting_type: standup
+                    status: completed
+                    attendees: 5
+      responses:
+        '200':
+          description: Photo metadata updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/paths/~1api~1v1~1repos~1%7Brepo_id%7D~1photos~1%7Bimg_id%7D/get/responses/200/content/application~1json/schema'
+              example:
+                id: img_01934f5b-9d3e-7abc-a012-3456789abcde
+                team_id: team_abc123xyz
+                filename: standup_dec18_final.png
+                content_type: image/png
+                size_bytes: 1048576
+                width: 1920
+                height: 1080
+                storage_key: teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                url: https://storage.example.com/teams/team_abc123xyz/img_01934f5b-9d3e-7abc.png
+                metadata:
+                  meeting_type: standup
+                  status: completed
+                  attendees: 5
+                created_by: user_abc123xyz
+                created_at: '2025-12-18T16:30:00Z'
+                updated_at: '2025-12-18T16:35:00Z'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteTeamPhoto
+      summary: Delete a team photo
+      description: 'Deletes a team photo and its associated data.
+
+        This operation is permanent.
+
+        '
+      tags:
+      - Photos
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        description: Team ID
+        schema:
+          type: string
+          example: team_abc123xyz
+      - name: img_id
+        in: path
+        required: true
+        description: Image ID (img_<uuidv7>)
+        schema:
+          type: string
+          pattern: ^img_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+          example: img_01934f5b-9d3e-7abc-a012-3456789abcde
+      responses:
+        '204':
+          description: Photo deleted successfully (no content)
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Unauthorized - missing or invalid authentication
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Photo not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata included in all list responses. Use `offset + limit` for the next page; stop when `hasMore` is `false`.
+      required:
+      - total
+      - limit
+      - offset
+      - hasMore
+      properties:
+        total:
+          type: integer
+          description: Total number of records matching the query (ignoring limit/offset).
+          example: 100
+        limit:
+          type: integer
+          description: Maximum number of records returned in this page. Matches the `limit` query parameter.
+          example: 20
+        offset:
+          type: integer
+          description: Number of records skipped. Matches the `offset` query parameter.
+          example: 0
+        hasMore:
+          type: boolean
+          description: '`true` if more records exist beyond this page. When `false`, this is the last page.'
+          example: true
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      required:
+      - success
+      - error
+      properties:
+        success:
+          type: boolean
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT token obtained from the auth service (/api/auth/token).
+
+        Token is validated using JWKS from the auth service.
+
+        Required claims: sub (user_id), email, name, tier.
+
+        '

@@ -1,0 +1,1053 @@
+openapi: 3.1.0
+info:
+  title: SageOx Admin AgentX API
+  version: 1.0.0
+  description: "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n"
+  contact:
+    name: SageOx Team
+  license:
+    name: MIT
+servers:
+- url: http://localhost:3000
+  description: Devcontainer
+- url: https://test.sageox.ai
+  description: Test
+- url: https://sageox.ai
+  description: Production
+security:
+- bearerAuth: []
+tags:
+- name: AgentX
+  description: 'Multi-tenant telemetry platform for CLI tools and AI agents. Register applications,
+
+    ingest events via API key authentication, and query analytics through the dashboard API.
+
+
+    **Two authentication models:**
+
+    - **Capture endpoint** (`POST /agentx/capture`): API key (`axk_...`) in `Authorization: Bearer` header. Designed for embedding in open-source CLIs.
+
+    - **Dashboard + CRUD**: JWT authentication with team membership verification per app.
+
+
+    **Key concepts:**
+
+    - **Events** are the core data unit — named, timestamped, with arbitrary JSONB properties
+
+    - **`distinct_id`** identifies a device/machine (SDK-generated UUID, not PII)
+
+    - **`$user_id`** (optional, in properties) correlates events to a logical user
+
+    - **Friction events** follow a convention: `friction.*` event names with `kind`, `actor`, `command` properties
+
+    '
+paths:
+  /api/v1/agentx/capture:
+    post:
+      operationId: agentxCapture
+      summary: Ingest telemetry events
+      description: 'Accepts a batch of telemetry events from CLI tools and AI agents.
+
+        Events are validated, timestamped, and stored in the app''s event stream.
+
+
+        **Authentication:** API key (`axk_...`) in `Authorization: Bearer` header.
+
+        No JWT required — this endpoint is designed for embedding in open-source CLIs.
+
+
+        **Collection controls:** If the app has `collection_enabled: false`, events are
+
+        accepted but silently dropped (returns `{"status": 1, "accepted": 0}`).
+
+        If `sample_rate < 1.0`, events are randomly sampled before storage.
+
+
+        **Validation rules:**
+
+        - Event names must match `^[a-z][a-z0-9]*(\.[a-z][a-z0-9-]*)*$` (dot-namespaced)
+
+        - `distinct_id` is required per event (opaque device/machine identifier)
+
+        - Timestamps older than 89 days or more than 1 day in the future are clamped (not rejected)
+
+        - Properties: max 4KB total per event, max 500 characters per individual value
+
+        - Max 500 events per batch
+
+
+        **Deduplication:** Include `$insert_id` (client-generated UUID) in properties to
+
+        prevent metric inflation from retries. Events with duplicate `$insert_id` values
+
+        within a 24-hour window are silently skipped.
+
+
+        See [Capture endpoint](#tag/AgentX/operation/agentxCapture) for integration examples.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - events
+              properties:
+                events:
+                  type: array
+                  maxItems: 500
+                  items:
+                    type: object
+                    required:
+                    - event
+                    - distinct_id
+                    properties:
+                      event:
+                        type: string
+                        pattern: ^[a-z][a-z0-9]*(\.[a-z][a-z0-9-]*)*$
+                        description: 'Dot-namespaced event name. Must start with a lowercase letter.
+
+                          Examples: `command.executed`, `friction.unknown-command`, `session.start`.
+
+                          '
+                        example: command.executed
+                      distinct_id:
+                        type: string
+                        description: 'Opaque device/machine identifier. SDK-generated UUID, persisted locally
+
+                          on the client. Not PII — just a correlation key for counting unique devices.
+
+                          '
+                        example: d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c
+                      timestamp:
+                        type: string
+                        format: date-time
+                        description: 'Event timestamp (RFC 3339). Defaults to server receive time if omitted.
+
+                          Timestamps older than 89 days or more than 1 day in the future are
+
+                          clamped to the boundary (not rejected), and `$adjusted_ts: true` is set
+
+                          in properties.
+
+                          '
+                        example: '2026-03-26T14:30:00Z'
+                      properties:
+                        type: object
+                        additionalProperties: true
+                        description: 'Arbitrary key-value metadata. Max 4KB total, max 500 characters per
+
+                          individual string value.
+
+
+                          **Reserved properties (set by SDK):**
+
+                          - `$insert_id` — Client UUID per event for deduplication
+
+                          - `$lib` — SDK name (e.g., `agentx-go`)
+
+                          - `$lib_version` — SDK version
+
+                          - `$user_id` — Optional opaque user identifier for user-level analytics
+
+
+                          **Friction properties (convention):**
+
+                          - `kind` — Friction type: `unknown-command`, `unknown-flag`, `missing-required`, `invalid-arg`, `parse-error`
+
+                          - `actor` — `human` or `agent`
+
+                          - `agent_type` — Agent identifier (e.g., `copilot`, `cursor`)
+
+                          - `command`, `subcommand` — CLI command context
+
+                          - `error_msg` — Error message shown to user
+
+                          - `suggestion` — Client-side auto-correction suggestion
+
+                          '
+            examples:
+              single-event:
+                summary: Single command execution event
+                value:
+                  events:
+                  - event: command.executed
+                    distinct_id: d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c
+                    properties:
+                      command: deploy
+                      duration_ms: 1234
+                      $lib: my-cli
+                      $lib_version: 1.2.0
+                      $insert_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+              friction-batch:
+                summary: Friction events batch
+                value:
+                  events:
+                  - event: friction.unknown-command
+                    distinct_id: d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c
+                    properties:
+                      kind: unknown-command
+                      actor: human
+                      command: delpoy
+                      error_msg: 'unknown command: delpoy'
+                      $insert_id: b2c3d4e5-f6a7-8901-bcde-f23456789012
+                  - event: friction.invalid-arg
+                    distinct_id: d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c
+                    properties:
+                      kind: invalid-arg
+                      actor: agent
+                      agent_type: copilot
+                      command: config
+                      subcommand: set
+                      error_msg: 'invalid value for --timeout: abc'
+                      $insert_id: c3d4e5f6-a7b8-9012-cdef-345678901234
+      responses:
+        '200':
+          description: Batch accepted. `accepted` indicates how many events were stored (may be less than submitted due to validation or sampling).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: integer
+                    description: Always `1` on success
+                    example: 1
+                  accepted:
+                    type: integer
+                    description: Number of events stored. May be 0 if collection is disabled or all events were sampled out.
+                    example: 2
+        '400':
+          description: Invalid request (empty batch, malformed JSON)
+        '413':
+          description: Batch exceeds 500 events
+        '429':
+          description: Rate limit exceeded
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+              description: Seconds to wait before retrying (includes jitter)
+            X-SageOx-Rate-Limit-Remaining:
+              schema:
+                type: integer
+              description: Events remaining in current rate limit window
+            X-SageOx-Quota-Remaining:
+              schema:
+                type: integer
+              description: Events remaining in monthly quota
+  /api/v1/agentx/apps:
+    post:
+      operationId: agentxCreateApp
+      summary: Register a new app
+      description: 'Creates a new AgentX application and returns the API key.
+
+
+        **The API key is shown only once in this response.** It is not retrievable
+
+        later via the GET endpoint. To obtain a new key, delete the app and recreate it.
+
+
+        The caller must be an active member of the specified team.
+
+
+        **Default metadata:** `rate_limit: 1000/min`, `burst_limit: 5000/min`, `monthly_quota: 10M events`.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - team_id
+              - title
+              - slug
+              properties:
+                team_id:
+                  type: string
+                  description: Team that owns this app. Must be a valid `team_` prefixed ID.
+                  example: team_abc123
+                title:
+                  type: string
+                  description: Human-readable app name
+                  example: My CLI Tool
+                slug:
+                  type: string
+                  pattern: ^[a-z][a-z0-9-]{0,49}$
+                  description: URL-safe identifier. Lowercase alphanumeric with hyphens, 1–50 characters. Must be unique per team.
+                  example: my-cli
+                description:
+                  type: string
+                  description: Optional description stored in app metadata
+            example:
+              team_id: team_abc123
+              title: My CLI Tool
+              slug: my-cli
+              description: Telemetry for the my-cli command-line tool
+      responses:
+        '201':
+          description: App created. API key included in response (shown once).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  app:
+                    $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/responses/200/content/application~1json/schema'
+                  api_key:
+                    type: string
+                    description: 'API key for the capture endpoint. **Shown only once** — store it securely.
+
+                      Format: `axk_` followed by 32 random base62 characters.
+
+                      '
+                    example: axk_a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6
+        '400':
+          description: Invalid request (missing fields, bad slug format)
+        '403':
+          description: Not a member of the specified team
+        '409':
+          description: An app with this slug already exists for this team
+    get:
+      operationId: agentxListApps
+      summary: List apps for a team
+      description: 'Returns all AgentX applications registered to the specified team.
+
+        API keys are never included in list responses.
+
+
+        The caller must be an active member of the specified team.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: query
+        name: team_id
+        required: true
+        schema:
+          type: string
+          example: team_abc123
+        description: Team ID to list apps for. Must be a valid `team_` prefixed ID.
+      responses:
+        '200':
+          description: List of apps (may be empty)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/responses/200/content/application~1json/schema'
+        '400':
+          description: Missing or invalid team_id
+        '403':
+          description: Not a member of the specified team
+  /api/v1/agentx/{app_id}:
+    get:
+      operationId: agentxGetApp
+      summary: Get app details
+      description: 'Returns application details including metadata and settings.
+
+        The API key is **not** included — it is only shown once at creation time.
+
+
+        Requires JWT authentication and team membership.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - in: path
+        name: app_id
+        required: true
+        schema:
+          type: string
+          pattern: ^app_[0-9a-f-]+$
+          example: app_01924a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b
+        description: AgentX application ID
+      responses:
+        '200':
+          description: App details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Application ID (`app_` prefix + UUIDv7)
+                    example: app_01924a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b
+                  team_id:
+                    type: string
+                    example: team_abc123
+                  title:
+                    type: string
+                    example: My CLI Tool
+                  slug:
+                    type: string
+                    example: my-cli
+                  metadata:
+                    type: object
+                    additionalProperties: true
+                    description: App configuration including rate limits, display settings, and collection controls
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        '404':
+          description: App not found
+    delete:
+      operationId: agentxDeleteApp
+      summary: Delete an app
+      description: 'Permanently deletes the application and invalidates its API key.
+
+        Any subsequent capture requests using this key will fail with 401.
+
+
+        **This action is irreversible.** All associated event data remains in storage
+
+        but is no longer queryable through the dashboard.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      responses:
+        '204':
+          description: App deleted
+        '404':
+          description: App not found
+  /api/v1/agentx/{app_id}/settings:
+    patch:
+      operationId: agentxUpdateSettings
+      summary: Update collection settings
+      description: "Updates collection control settings for the app.\n\n- **`collection_enabled`**: When `false`, the capture endpoint accepts events\n  but drops them immediately — zero server-side resources consumed.\n- **`sample_rate`**: Controls what fraction of events are stored (0.0 to 1.0).\n  Events are randomly sampled before database insertion. Set to `1.0` to keep\n  all events, or lower to reduce storage for high-volume apps.\n\nSettings take effect on the next capture request (cached for up to 5 minutes\nin the API key middleware).\n"
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                collection_enabled:
+                  type: boolean
+                  description: 'When `false`, incoming telemetry is accepted but dropped immediately.
+
+                    No events are stored or processed. Defaults to `true`.
+
+                    '
+                sample_rate:
+                  type: number
+                  format: double
+                  minimum: 0
+                  maximum: 1
+                  description: 'Fraction of events to store (0.0 to 1.0). Events are randomly sampled
+
+                    before database insertion. `1.0` keeps all events; `0.5` drops ~50%.
+
+                    '
+            examples:
+              disable-collection:
+                summary: Disable collection entirely
+                value:
+                  collection_enabled: false
+              reduce-sampling:
+                summary: Keep 50% of events
+                value:
+                  sample_rate: 0.5
+      responses:
+        '200':
+          description: Updated settings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collection_enabled:
+                    type: boolean
+                    example: true
+                  sample_rate:
+                    type: number
+                    format: double
+                    example: 1
+        '400':
+          description: Invalid sample_rate (must be 0.0–1.0)
+        '404':
+          description: App not found
+  /api/v1/agentx/{app_id}/summary:
+    get:
+      operationId: agentxSummary
+      summary: Get KPI summary
+      description: 'Returns fast KPI data from pre-aggregated counters. Designed for dashboard
+
+        widgets and overview cards. Responds in <100ms.
+
+
+        Returns events in the last 24 hours. Does not accept date range parameters.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      responses:
+        '200':
+          description: KPI summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events_24h:
+                    type: integer
+                    format: int64
+                    description: Total events in the last 24 hours
+  /api/v1/agentx/{app_id}/overview:
+    get:
+      operationId: agentxOverview
+      summary: Get overview statistics
+      description: 'Returns aggregate statistics for the specified date range: total events,
+
+        unique users, friction event count, friction rate, and latest client version.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      - in: query
+        name: tz
+        schema:
+          type: string
+          example: America/Los_Angeles
+        description: IANA timezone for time series bucketing. Defaults to UTC.
+      responses:
+        '200':
+          description: Overview statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_events:
+                    type: integer
+                    format: int64
+                  total_users:
+                    type: integer
+                    format: int64
+                  friction_events:
+                    type: integer
+                    format: int64
+                  friction_rate:
+                    type: number
+                    format: double
+                    description: Percentage of events that are friction events (0–100)
+                  latest_version:
+                    type: string
+  /api/v1/agentx/{app_id}/events:
+    get:
+      operationId: agentxEvents
+      summary: Get event time series
+      description: 'Returns time-bucketed event counts grouped by event name.
+
+        Buckets are hourly for ranges <= 7 days, daily for longer ranges.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      responses:
+        '200':
+          description: Time series data points
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/responses/200/content/application~1json/schema/items'
+  /api/v1/agentx/{app_id}/friction:
+    get:
+      operationId: agentxFriction
+      summary: Get friction forensics
+      description: 'Returns comprehensive friction analysis with selective metric loading.
+
+        Use the `metrics` parameter to request only the sections you need — each
+
+        metric is fetched concurrently for optimal performance.
+
+
+        **Available metrics:** `time_series`, `by_actor`, `by_tool`,
+
+        `top_unknown_commands`, `agent_stats`, `client_versions`, `hotspots`,
+
+        `recent_events`.
+
+
+        When `compare=true`, includes a previous-period comparison for trend analysis.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1overview/get/parameters/3'
+      - in: query
+        name: kind
+        schema:
+          type: string
+          enum:
+          - unknown-command
+          - unknown-flag
+          - missing-required
+          - invalid-arg
+          - parse-error
+        description: Filter by friction kind
+      - in: query
+        name: metrics
+        schema:
+          type: string
+          example: time_series,by_actor,hotspots
+        description: Comma-separated list of metric sections to include. Omit to include all.
+      - in: query
+        name: events_limit
+        schema:
+          type: integer
+          default: 50
+          minimum: 1
+          maximum: 500
+        description: Max recent events to return
+      - in: query
+        name: events_offset
+        schema:
+          type: integer
+          default: 0
+          minimum: 0
+        description: Offset for recent events pagination
+      - in: query
+        name: compare
+        schema:
+          type: string
+          enum:
+          - 'true'
+          - 'false'
+          default: 'false'
+        description: Include previous-period comparison
+      responses:
+        '200':
+          description: Friction forensics response. Sections not requested via `metrics` will be empty arrays.
+          content:
+            application/json:
+              schema:
+                type: object
+                description: 'Composite friction forensics response. Each section is independently
+
+                  loaded based on the `metrics` query parameter. Sections not requested
+
+                  return empty arrays.
+
+                  '
+                properties:
+                  time_series:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date:
+                          type: string
+                        kind:
+                          type: string
+                        event_count:
+                          type: integer
+                          format: int64
+                  by_actor:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        actor:
+                          type: string
+                          enum:
+                          - human
+                          - agent
+                        kind:
+                          type: string
+                        event_count:
+                          type: integer
+                          format: int64
+                  by_tool:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tool:
+                          type: string
+                        kind:
+                          type: string
+                        event_count:
+                          type: integer
+                          format: int64
+                        unique_users:
+                          type: integer
+                          format: int64
+                  top_unknown_commands:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        command:
+                          type: string
+                        input:
+                          type: string
+                        attempt_count:
+                          type: integer
+                          format: int64
+                        unique_users:
+                          type: integer
+                          format: int64
+                        last_seen:
+                          type: string
+                          format: date-time
+                  agent_stats:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agent_type:
+                          type: string
+                        total_count:
+                          type: integer
+                          format: int64
+                        agent_triggered:
+                          type: integer
+                          format: int64
+                        human_triggered:
+                          type: integer
+                          format: int64
+                        unique_users:
+                          type: integer
+                          format: int64
+                  client_versions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        version:
+                          type: string
+                        event_count:
+                          type: integer
+                          format: int64
+                        unique_kinds:
+                          type: integer
+                          format: int64
+                        first_seen:
+                          type: string
+                          format: date-time
+                        last_seen:
+                          type: string
+                          format: date-time
+                  hotspots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        command:
+                          type: string
+                        subcommand:
+                          type: string
+                        kind:
+                          type: string
+                        event_count:
+                          type: integer
+                          format: int64
+                        affected_users:
+                          type: integer
+                          format: int64
+                        last_seen:
+                          type: string
+                          format: date-time
+                  recent_events:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ts:
+                          type: string
+                          format: date-time
+                        event:
+                          type: string
+                        distinct_id:
+                          type: string
+                        kind:
+                          type: string
+                        actor:
+                          type: string
+                        agent_type:
+                          type: string
+                        command:
+                          type: string
+                        subcommand:
+                          type: string
+                        input:
+                          type: string
+                        error_msg:
+                          type: string
+                        suggestion:
+                          type: string
+                        lib_version:
+                          type: string
+                        path_bucket:
+                          type: string
+                        total_count:
+                          type: integer
+                          format: int64
+                          description: Total matching events (for pagination)
+                  events_total:
+                    type: integer
+                    format: int64
+                    description: Total matching friction events (for pagination metadata)
+                  events_limit:
+                    type: integer
+                    format: int32
+                  events_offset:
+                    type: integer
+                    format: int32
+                  previous_period:
+                    type: object
+                    nullable: true
+                    description: Present only when `compare=true`
+                    properties:
+                      kind:
+                        type: string
+                      current_count:
+                        type: integer
+                        format: int64
+                      previous_count:
+                        type: integer
+                        format: int64
+  /api/v1/agentx/{app_id}/commands:
+    get:
+      operationId: agentxCommands
+      summary: Get command usage ranking
+      description: 'Returns the top 50 commands by usage count with percentage distribution.
+
+        Command names are extracted from `properties->>''command''` in events.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      responses:
+        '200':
+          description: Command distribution
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1agents/get/responses/200/content/application~1json/schema/items'
+  /api/v1/agentx/{app_id}/agents:
+    get:
+      operationId: agentxAgents
+      summary: Get agent type distribution
+      description: 'Returns event counts grouped by actor and agent type.
+
+        Labels are formatted as `{actor}/{agent_type}` (e.g., `agent/copilot`).
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      responses:
+        '200':
+          description: Agent distribution
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    label:
+                      type: string
+                      description: Category label (command name, agent type, etc.)
+                    count:
+                      type: integer
+                      format: int64
+                    pct:
+                      type: number
+                      format: double
+                      description: Percentage of total (0–100)
+  /api/v1/agentx/{app_id}/versions:
+    get:
+      operationId: agentxVersions
+      summary: Get version adoption data
+      description: 'Returns daily event counts grouped by client library version
+
+        (`properties->>''$lib_version''`). Useful for tracking version adoption curves.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      responses:
+        '200':
+          description: Version time series (daily buckets)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/responses/200/content/application~1json/schema/items'
+  /api/v1/agentx/{app_id}/users:
+    get:
+      operationId: agentxUsers
+      summary: Get daily active users
+      description: 'Returns daily active user counts. Users are identified by
+
+        `COALESCE(properties->>''$user_id'', distinct_id)`.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - in: query
+        name: start_date
+        schema:
+          type: string
+          format: date
+          example: '2026-03-19'
+        description: Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago.
+      - in: query
+        name: end_date
+        schema:
+          type: string
+          format: date
+          example: '2026-03-26'
+        description: End of date range (ISO 8601 date or datetime). Defaults to now.
+      responses:
+        '200':
+          description: DAU time series
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    bucket:
+                      type: string
+                      description: Time bucket (RFC 3339 for hourly, `YYYY-MM-DD` for daily)
+                      example: '2026-03-26T14:00:00Z'
+                    count:
+                      type: integer
+                      format: int64
+                    event:
+                      type: string
+                      description: Event name or version string (present when grouped by event/version)
+  /api/v1/agentx/{app_id}/export:
+    get:
+      operationId: agentxExport
+      summary: Export friction events as CSV
+      description: 'Streams all friction events for the date range as a CSV download.
+
+
+        **Columns:** `ts`, `event`, `distinct_id`, `kind`, `actor`, `agent_type`,
+
+        `command`, `subcommand`, `input`, `error_msg`, `suggestion`, `lib_version`,
+
+        `path_bucket`, `user_id`.
+
+        '
+      tags:
+      - AgentX
+      security:
+      - bearerAuth: []
+      parameters:
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D/get/parameters/0'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/1'
+      - $ref: '#/paths/~1api~1v1~1agentx~1%7Bapp_id%7D~1users/get/parameters/2'
+      responses:
+        '200':
+          description: CSV file download
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename=agentx-friction-app_01234.csv
+          content:
+            text/csv:
+              schema:
+                type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT token obtained from the auth service (/api/auth/token).
+
+        Token is validated using JWKS from the auth service.
+
+        Required claims: sub (user_id), email, name, tier.
+
+        '

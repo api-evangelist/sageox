@@ -1,0 +1,2532 @@
+openapi: 3.1.0
+info:
+  title: SageOx Admin Teams API
+  version: 1.0.0
+  description: "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n"
+  contact:
+    name: SageOx Team
+  license:
+    name: MIT
+servers:
+- url: http://localhost:3000
+  description: Devcontainer
+- url: https://test.sageox.ai
+  description: Test
+- url: https://sageox.ai
+  description: Production
+security:
+- bearerAuth: []
+tags:
+- name: Teams
+  description: 'Create and manage teams with hierarchical membership (owner, admin, member). Handles invitations via email with role assignment, team-wide conventions and norms, and child-team relationships. Teams are the primary organizational unit in SageOx.
+
+    '
+paths:
+  /api/v1/teams:
+    post:
+      operationId: createTeam
+      summary: Create a new team
+      description: Creates a new team and adds the authenticated user as the team owner.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  description: Team display name (required)
+                  example: Product Team
+                slug:
+                  type: string
+                  description: URL-safe team identifier (optional, auto-generated if omitted)
+                  example: product-team
+            examples:
+              minimal:
+                summary: Minimal request with auto-generated slug
+                value:
+                  name: Product Team
+              full:
+                summary: Full request with explicit slug
+                value:
+                  name: Product Team
+                  slug: product-team
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - slug
+                - name
+                - created_at
+                properties:
+                  id:
+                    type: string
+                    description: Team identifier (team_*)
+                    example: team_abc123xyz
+                  slug:
+                    type: string
+                    description: URL-safe team identifier
+                    example: product-team
+                  name:
+                    type: string
+                    example: Product Team
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                missing_name:
+                  value:
+                    success: false
+                    error: team name is required
+                invalid_slug:
+                  value:
+                    success: false
+                    error: slug must be lowercase alphanumeric with hyphens
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listTeams
+      summary: List user's teams
+      description: Returns all teams the authenticated user is a member of, with pagination.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+        description: Maximum number of teams to return
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: Number of teams to skip
+      responses:
+        '200':
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - teams
+                - pagination
+                properties:
+                  teams:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - id
+                      - slug
+                      - name
+                      - member_count
+                      - created_at
+                      - updated_at
+                      properties:
+                        id:
+                          type: string
+                          example: team_abc123xyz
+                        slug:
+                          type: string
+                          example: product-team
+                        name:
+                          type: string
+                          example: Product Team
+                        member_count:
+                          type: integer
+                          example: 5
+                        policies:
+                          type: object
+                          additionalProperties: true
+                          nullable: true
+                        conventions:
+                          type: object
+                          additionalProperties: true
+                          nullable: true
+                        metadata:
+                          type: object
+                          additionalProperties: true
+                          nullable: true
+                        created_at:
+                          type: string
+                          format: date-time
+                          example: '2025-12-03T14:30:00Z'
+                        updated_at:
+                          type: string
+                          format: date-time
+                          example: '2025-12-03T14:30:00Z'
+                  pagination:
+                    type: object
+                    required:
+                    - total
+                    - limit
+                    - offset
+                    properties:
+                      total:
+                        type: integer
+                        description: Total number of teams
+                        example: 42
+                      limit:
+                        type: integer
+                        description: Requested limit
+                        example: 20
+                      offset:
+                        type: integer
+                        description: Requested offset
+                        example: 0
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}:
+    get:
+      operationId: getTeam
+      summary: Get team details
+      description: Returns detailed information about a team. User must be a team member.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        description: Team identifier
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Team details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - slug
+                - name
+                - member_count
+                - created_at
+                - updated_at
+                properties:
+                  id:
+                    type: string
+                    example: team_abc123xyz
+                  slug:
+                    type: string
+                    example: product-team
+                  name:
+                    type: string
+                    example: Product Team
+                  member_count:
+                    type: integer
+                    example: 5
+                  policies:
+                    type: object
+                    additionalProperties: true
+                  conventions:
+                    type: object
+                    additionalProperties: true
+                  metadata:
+                    type: object
+                    additionalProperties: true
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+        '400':
+          description: Invalid team_id format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateTeam
+      summary: Update team details
+      description: Updates team name, policies, or conventions. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: New team name (optional)
+                  example: Product Team Updated
+                policies:
+                  type: object
+                  description: Team policies configuration (optional)
+                  additionalProperties: true
+                  example:
+                    max_members: 100
+                    allow_public: true
+                conventions:
+                  type: object
+                  description: Team conventions (optional)
+                  additionalProperties: true
+                  example:
+                    code_review_required: true
+            examples:
+              name_only:
+                summary: Update name only
+                value:
+                  name: Product Team Updated
+              with_policies:
+                summary: Update name and policies
+                value:
+                  name: Product Team
+                  policies:
+                    max_members: 100
+      responses:
+        '200':
+          description: Team updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - slug
+                - name
+                - member_count
+                - created_at
+                - updated_at
+                properties:
+                  id:
+                    type: string
+                    example: team_abc123xyz
+                  slug:
+                    type: string
+                    example: product-team
+                  name:
+                    type: string
+                    example: Product Team Updated
+                  member_count:
+                    type: integer
+                    example: 5
+                  policies:
+                    type: object
+                    additionalProperties: true
+                  conventions:
+                    type: object
+                    additionalProperties: true
+                  metadata:
+                    type: object
+                    additionalProperties: true
+                  created_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:35:00Z'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: deleteTeam
+      summary: Delete a team
+      description: Soft-deletes a team. Requires owner role. Team can be recovered during grace period.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '204':
+          description: Team deleted successfully
+        '400':
+          description: Invalid team_id format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/check-slug:
+    get:
+      operationId: checkTeamSlug
+      summary: Check if team slug is available
+      description: Validates slug format and returns availability status.
+      tags:
+      - Teams
+      security: []
+      parameters:
+      - name: slug
+        in: query
+        required: true
+        schema:
+          type: string
+          pattern: ^[a-z0-9-]+$
+        description: Slug to check
+        example: product-team
+      responses:
+        '200':
+          description: Slug validation result
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - available
+                properties:
+                  available:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    description: Optional validation message
+                    example: this slug is available
+        '400':
+          description: Missing slug parameter
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/adopt:
+    post:
+      operationId: adoptTeam
+      summary: Team adoption (deprecated)
+      description: This endpoint is deprecated. Teams are now standalone entities and cannot be adopted into organizations.
+      tags:
+      - Teams
+      deprecated: true
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '410':
+          description: Gone - team adoption is deprecated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/claim:
+    post:
+      operationId: claimTeam
+      summary: Claim team ownership with code
+      description: Claims ownership of an orphan team using a claim code generated during initialization.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - team_id
+              - claim_code
+              properties:
+                team_id:
+                  type: string
+                  description: Team identifier to claim
+                  pattern: ^team_[a-z0-9]{10}$
+                  example: team_abc123xyz
+                claim_code:
+                  type: string
+                  description: Claim code from team initialization
+                  example: abc123xyz
+      responses:
+        '200':
+          description: Team claimed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - success
+                - team_id
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  message:
+                    type: string
+                    example: Team claimed successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: Claim code expired or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/parent:
+    get:
+      operationId: getTeamParent
+      summary: Get team's parent
+      description: Returns the parent team if one is set, or null if team is a root team.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Parent team or null
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: team_parent123
+                  name:
+                    type: string
+                    example: Parent Team
+                  slug:
+                    type: string
+                    example: parent-team
+                  created_at:
+                    type: string
+                    format: date-time
+                  updated_at:
+                    type: string
+                    format: date-time
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: setTeamParent
+      summary: Set or unset team parent
+      description: Sets a parent team to create hierarchy, or unsets the parent to make it a root team. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - parent_team_id
+              properties:
+                parent_team_id:
+                  type: string
+                  nullable: true
+                  description: Parent team ID, or null to make this a root team
+                  example: team_parent123
+      responses:
+        '200':
+          description: Parent set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: team_abc123xyz
+                  parent_team_id:
+                    type: string
+                    nullable: true
+                    example: team_parent123
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                circular:
+                  value:
+                    success: false
+                    error: would create circular reference
+                self_reference:
+                  value:
+                    success: false
+                    error: team cannot be its own parent
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions or not member of parent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team or parent not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/children:
+    get:
+      operationId: getTeamChildren
+      summary: Get team's child teams
+      description: Returns all direct child teams in the hierarchy.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Array of child teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - name
+                  - slug
+                  properties:
+                    id:
+                      type: string
+                      example: team_child1xyz
+                    name:
+                      type: string
+                      example: Child Team 1
+                    slug:
+                      type: string
+                      example: child-team-1
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/ancestors:
+    get:
+      operationId: getTeamAncestors
+      summary: Get team's ancestor chain
+      description: Returns the complete ancestor chain up to the root team.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Array of ancestor teams from immediate parent to root
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - name
+                  - slug
+                  properties:
+                    id:
+                      type: string
+                      example: team_root123
+                    name:
+                      type: string
+                      example: Root Team
+                    slug:
+                      type: string
+                      example: root-team
+                    created_at:
+                      type: string
+                      format: date-time
+                    updated_at:
+                      type: string
+                      format: date-time
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/members:
+    get:
+      operationId: listTeamMembers
+      summary: List team members
+      description: Returns all active team members with their roles and metadata.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Team members list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - members
+                - total
+                properties:
+                  members:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - user_id
+                      - email
+                      - role
+                      - invited_at
+                      properties:
+                        user_id:
+                          type: string
+                          example: user_abc123
+                        email:
+                          type: string
+                          format: email
+                          example: person@example.com
+                        name:
+                          type: string
+                          example: Person Name
+                        role:
+                          type: string
+                          enum:
+                          - owner
+                          - admin
+                          - member
+                          example: owner
+                        invited_by:
+                          type: string
+                          description: User ID of person who invited this member
+                          example: user_xyz789
+                        invited_at:
+                          type: string
+                          format: date-time
+                          example: '2025-12-03T14:30:00Z'
+                  total:
+                    type: integer
+                    example: 5
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/members/{user_id}:
+    put:
+      operationId: updateTeamMemberRole
+      summary: Update team member role
+      description: Changes a member's role within the team. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: User ID to update
+        example: user_def456
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - role
+              properties:
+                role:
+                  type: string
+                  enum:
+                  - owner
+                  - admin
+                  - member
+                  description: New role for the member
+                  example: admin
+      responses:
+        '200':
+          description: Member role updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - user_id
+                - email
+                - role
+                - invited_at
+                properties:
+                  user_id:
+                    type: string
+                    example: user_def456
+                  email:
+                    type: string
+                    format: email
+                    example: person@example.com
+                  name:
+                    type: string
+                    example: Person Name
+                  role:
+                    type: string
+                    enum:
+                    - owner
+                    - admin
+                    - member
+                    example: admin
+                  invited_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                last_owner:
+                  value:
+                    success: false
+                    error: cannot demote the last owner
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team or member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: removeTeamMember
+      summary: Remove team member
+      description: Removes a member from the team. Requires owner role. Cannot remove the last owner.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      - name: user_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: User ID to remove
+        example: user_def456
+      responses:
+        '204':
+          description: Member removed successfully
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                last_owner:
+                  value:
+                    success: false
+                    error: cannot revoke the last owner
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team or member not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/members/me:
+    delete:
+      operationId: leaveTeam
+      summary: Leave team
+      description: Allows the authenticated user to remove themselves from a team. Cannot leave if you are the last owner.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '204':
+          description: Successfully left team
+        '400':
+          description: Cannot leave
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                last_owner:
+                  value:
+                    success: false
+                    error: cannot leave as the last owner - transfer ownership or delete the team instead
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found or not a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/members/bulk:
+    put:
+      operationId: bulkUpdateTeamMemberRoles
+      summary: Bulk update member roles
+      description: Updates roles for multiple members in a single request. Requires owner role. Partial errors are returned with successful updates.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - user_ids
+              - role
+              properties:
+                user_ids:
+                  type: array
+                  description: Array of user IDs to update
+                  items:
+                    type: string
+                  example:
+                  - user_def456
+                  - user_ghi789
+                role:
+                  type: string
+                  enum:
+                  - owner
+                  - admin
+                  - member
+                  description: New role for all specified users
+                  example: admin
+      responses:
+        '200':
+          description: Members updated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - updated
+                - total
+                properties:
+                  updated:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        user_id:
+                          type: string
+                        email:
+                          type: string
+                          format: email
+                        name:
+                          type: string
+                        role:
+                          type: string
+                        invited_at:
+                          type: string
+                          format: date-time
+                  total:
+                    type: integer
+                  errors:
+                    type: array
+                    description: Errors from unsuccessful operations
+                    items:
+                      type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: bulkRemoveTeamMembers
+      summary: Bulk remove members
+      description: Removes multiple members from a team in a single request. Requires owner role. Cannot remove all owners.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - user_ids
+              properties:
+                user_ids:
+                  type: array
+                  description: Array of user IDs to remove
+                  items:
+                    type: string
+                  example:
+                  - user_def456
+                  - user_ghi789
+      responses:
+        '200':
+          description: Members removed (includes partial success)
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - revoked
+                - total
+                properties:
+                  revoked:
+                    type: array
+                    description: User IDs that were successfully removed
+                    items:
+                      type: string
+                    example:
+                    - user_def456
+                  total:
+                    type: integer
+                  errors:
+                    type: array
+                    description: Errors from unsuccessful operations
+                    items:
+                      type: string
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                no_owners:
+                  value:
+                    success: false
+                    error: cannot revoke all owners from the team
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/invites:
+    post:
+      operationId: createTeamInvite
+      summary: Create team invite
+      description: Invites a user to join a team by email. Requires owner role. An active invite must not already exist for this email.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  description: Email address to invite
+                  example: newmember@example.com
+                role:
+                  type: string
+                  enum:
+                  - owner
+                  - member
+                  description: Role for the invited member (defaults to member)
+                  default: member
+                  example: member
+      responses:
+        '201':
+          description: Invite created
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - email
+                - team_id
+                - role
+                - invited_by
+                - invited_at
+                - expires_at
+                - token
+                properties:
+                  id:
+                    type: string
+                    description: Invite ID
+                    example: inv_abc123
+                  email:
+                    type: string
+                    format: email
+                    example: newmember@example.com
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  role:
+                    type: string
+                    example: member
+                  invited_by:
+                    type: string
+                    description: User ID of person who created invite
+                    example: user_owner123
+                  invited_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: Invite expiration time
+                    example: '2025-12-10T14:30:00Z'
+                  token:
+                    type: string
+                    description: Token for invite acceptance link
+                    example: token_abc123xyz
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Active invite already exists for this email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: listTeamInvites
+      summary: List pending team invites
+      description: Returns all active (non-expired, non-accepted) invites for the team. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: List of pending invites
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - email
+                  - team_id
+                  - role
+                  - invited_by
+                  - invited_at
+                  - expires_at
+                  properties:
+                    id:
+                      type: string
+                      example: inv_abc123
+                    email:
+                      type: string
+                      format: email
+                      example: newmember@example.com
+                    team_id:
+                      type: string
+                      example: team_abc123xyz
+                    role:
+                      type: string
+                      example: member
+                    invited_by:
+                      type: string
+                      example: user_owner123
+                    invited_at:
+                      type: string
+                      format: date-time
+                      example: '2025-12-03T14:30:00Z'
+                    expires_at:
+                      type: string
+                      format: date-time
+                      example: '2025-12-10T14:30:00Z'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/invites/{invite_id}:
+    delete:
+      operationId: revokeTeamInvite
+      summary: Revoke team invite
+      description: Revokes a pending invite, preventing the recipient from accepting it. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      - name: invite_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Invite ID to revoke
+        example: inv_abc123
+      responses:
+        '204':
+          description: Invite revoked
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team or invite not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/invites/team/{token}:
+    get:
+      operationId: getTeamInviteByToken
+      summary: Get team invite details
+      description: Retrieves invite details using a token (no authentication required). Used to preview invites before accepting.
+      tags:
+      - Teams
+      security: []
+      parameters:
+      - name: token
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Invite token
+        example: token_abc123xyz
+      responses:
+        '200':
+          description: Invite details
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - id
+                - email
+                - team_id
+                - team_name
+                - role
+                - invited_by
+                - expires_at
+                properties:
+                  id:
+                    type: string
+                    example: inv_abc123
+                  email:
+                    type: string
+                    format: email
+                    example: newmember@example.com
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  team_name:
+                    type: string
+                    example: Product Team
+                  role:
+                    type: string
+                    example: member
+                  invited_by:
+                    type: string
+                    description: User ID of inviter
+                    example: user_owner123
+                  expires_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-10T14:30:00Z'
+        '404':
+          description: Invite not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: Invite expired or invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/invite-code:
+    get:
+      operationId: getTeamInviteCode
+      summary: Get team invite code
+      description: Returns the current invite code for the team (generates one if none exists). Requires owner or admin role. Use code with join endpoint to add members.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Current invite code
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - code
+                - url
+                properties:
+                  code:
+                    type: string
+                    description: Short invite code
+                    example: ABC2D3EF5GH7
+                  url:
+                    type: string
+                    format: uri
+                    description: Full invite URL
+                    example: https://sageox.ai/teams/team_abc123xyz/join?code=ABC2D3EF5GH7
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner or admin role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      operationId: regenerateTeamInviteCode
+      summary: Regenerate team invite code
+      description: Generates a new invite code, invalidating the previous one. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: New invite code generated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - code
+                - url
+                properties:
+                  code:
+                    type: string
+                    description: New short invite code
+                    example: XYZ9ABCDEF2G
+                  url:
+                    type: string
+                    format: uri
+                    description: Full invite URL
+                    example: https://sageox.ai/teams/team_abc123xyz/join?code=XYZ9ABCDEF2G
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/join:
+    post:
+      operationId: joinTeamWithCode
+      summary: Join team with invite code
+      description: Joins an authenticated user to a team using an invite code. Automatically grants member role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - code
+              properties:
+                code:
+                  type: string
+                  description: Invite code from GET /api/v1/teams/{team_id}/invite-code
+                  example: ABC2D3EF5GH7
+      responses:
+        '200':
+          description: Successfully joined team
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - team_name
+                - team_slug
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  team_name:
+                    type: string
+                    example: Product Team
+                  team_slug:
+                    type: string
+                    example: product-team
+        '400':
+          description: Invalid code or already a member
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/delete:
+    post:
+      operationId: initiateTeamDeletion
+      summary: Initiate team deletion
+      description: Starts the team deletion process with a grace period. Requires owner role. Returns a workflow ID for tracking.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  description: Optional reason for deletion (audit purposes)
+                  example: Project concluded
+      responses:
+        '200':
+          description: Deletion initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - status
+                - status_url
+                - expires_at
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    example: pending
+                  status_url:
+                    type: string
+                    format: uri
+                    description: URL to check deletion status
+                    example: /api/v1/teams/team_abc123xyz/delete
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: Estimated expiration (authoritative value in workflow)
+                    example: '2025-12-10T14:30:00Z'
+                  workflow_id:
+                    type: string
+                    description: Temporal workflow ID for tracking
+                    example: team-deletion-requested-team_abc123xyz
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    get:
+      operationId: getTeamDeletionStatus
+      summary: Get team deletion status
+      description: Checks the current status of a team deletion request.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Deletion status
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - status
+                - initiated_by
+                - initiated_at
+                - expires_at
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  status:
+                    type: string
+                    enum:
+                    - pending
+                    - confirmed
+                    - canceled
+                    - expired
+                    - completed
+                    example: pending
+                  initiated_by:
+                    type: string
+                    description: User ID who initiated deletion
+                    example: user_owner123
+                  initiated_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+                  expires_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-10T14:30:00Z'
+                  confirmed_by:
+                    type: string
+                    nullable: true
+                    description: User ID who confirmed deletion
+                    example: null
+                  confirmed_at:
+                    type: string
+                    format: date-time
+                    nullable: true
+                    example: null
+                  workflow_id:
+                    type: string
+                    example: team-deletion-requested-team_abc123xyz
+                  confirmation_required:
+                    type: string
+                    description: Text that must be typed to confirm (only when status is pending)
+                    example: team_abc123xyz
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found or no deletion in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/delete/confirm:
+    post:
+      operationId: confirmTeamDeletion
+      summary: Confirm team deletion
+      description: Confirms deletion of a team. Must type the team ID exactly to prevent accidental deletion. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - confirmation_text
+              properties:
+                confirmation_text:
+                  type: string
+                  description: Must match the team_id exactly
+                  example: team_abc123xyz
+      responses:
+        '200':
+          description: Deletion confirmed
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - status
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  status:
+                    type: string
+                    enum:
+                    - confirmed
+                    example: confirmed
+        '400':
+          description: Confirmation text incorrect or deletion not pending
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/delete/cancel:
+    post:
+      operationId: cancelTeamDeletion
+      summary: Cancel team deletion
+      description: Cancels a pending team deletion request. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Deletion canceled
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - status
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  status:
+                    type: string
+                    enum:
+                    - canceled
+                    example: canceled
+        '400':
+          description: No deletion pending or already confirmed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/conventions:
+    get:
+      operationId: getTeamConventions
+      summary: Get team conventions
+      description: Returns published and draft conventions for the team. Any team member can view.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Team conventions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: Published conventions
+                    example: '# Team Conventions\n\nAll PRs require 2 approvals.'
+                  draft:
+                    type: string
+                    nullable: true
+                    description: Draft conventions (if any)
+                    example: '# Team Conventions\n\nAll PRs require 2 approvals.\nCode coverage must be above 80%.'
+                  updated_at:
+                    type: string
+                    format: date-time
+                    example: '2025-12-03T14:30:00Z'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/conventions/draft:
+    put:
+      operationId: saveDraftConventions
+      summary: Save draft conventions
+      description: Saves draft conventions without publishing. Requires owner role. Drafts can be discarded or published.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - draft
+              properties:
+                draft:
+                  type: string
+                  description: Draft conventions content (Markdown)
+                  example: '# Team Conventions\n\nAll PRs require 2 approvals.\nCode coverage must be above 80%.'
+      responses:
+        '200':
+          description: Draft saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                  draft:
+                    type: string
+                  updated_at:
+                    type: string
+                    format: date-time
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: discardDraftConventions
+      summary: Discard draft conventions
+      description: Discards any unsaved draft conventions. Requires owner role.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '204':
+          description: Draft discarded
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/conventions/publish:
+    post:
+      operationId: publishConventions
+      summary: Publish conventions
+      description: Publishes the current draft as the active conventions. Requires owner role. Draft is cleared after publishing.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Conventions published
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                    description: Published conventions
+                  draft:
+                    type: string
+                    nullable: true
+                    example: null
+                  updated_at:
+                    type: string
+                    format: date-time
+        '400':
+          description: No draft to publish
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Insufficient permissions (requires owner role)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/diagram:
+    get:
+      operationId: getTeamDiagram
+      summary: Get team diagram
+      description: Returns aggregated resource counts by category for visualization. Member-accessible.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Team diagram data
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - total_resources
+                - by_category
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  total_resources:
+                    type: integer
+                    example: 42
+                  by_category:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - category
+                      - count
+                      properties:
+                        category:
+                          type: string
+                          example: repository
+                        count:
+                          type: integer
+                          example: 12
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/teams/{team_id}/entities:
+    get:
+      operationId: getTeamEntities
+      summary: Get team entities
+      description: Returns flattened list of all entities (resources) in the team for table display. Member-accessible.
+      tags:
+      - Teams
+      security:
+      - BearerAuth: []
+      parameters:
+      - name: team_id
+        in: path
+        required: true
+        schema:
+          type: string
+          pattern: ^team_[a-z0-9]{10}$
+        example: team_abc123xyz
+      responses:
+        '200':
+          description: Team entities list
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - team_id
+                - entities
+                - total
+                properties:
+                  team_id:
+                    type: string
+                    example: team_abc123xyz
+                  entities:
+                    type: array
+                    items:
+                      type: object
+                      required:
+                      - resource_id
+                      - resource_title
+                      - resource_type
+                      - category
+                      properties:
+                        resource_id:
+                          type: string
+                          example: repo_012345
+                        resource_title:
+                          type: string
+                          example: My Repository
+                        resource_type:
+                          type: string
+                          example: repository
+                        provider:
+                          type: string
+                          example: github
+                        category:
+                          type: string
+                          example: repository
+                        lifecycle:
+                          type: string
+                          example: active
+                        status:
+                          type: string
+                          example: healthy
+                  total:
+                    type: integer
+                    example: 42
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Not a member of this team
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Team not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      required:
+      - success
+      - error
+      properties:
+        success:
+          type: boolean
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT token obtained from the auth service (/api/auth/token).
+
+        Token is validated using JWKS from the auth service.
+
+        Required claims: sub (user_id), email, name, tier.
+
+        '
