@@ -1,0 +1,35 @@
+{
+  "name": "SageOx",
+  "description": "The hivemind for human-AI teams. SageOx adds shared, structured team memory \u2014 Knowledge Bubbles \u2014 that AI coworkers consult before they act, built from recorded Discussions and coding Sessions.",
+  "url": "https://sageox.ai",
+  "provider": {
+    "organization": "SageOx",
+    "url": "https://sageox.ai"
+  },
+  "version": "1.0.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false
+  },
+  "skills": [
+    {
+      "id": "search-docs",
+      "name": "Search documentation",
+      "description": "Search SageOx product and API documentation by keyword or question.",
+      "tags": [
+        "docs",
+        "search"
+      ]
+    },
+    {
+      "id": "get-page",
+      "name": "Get documentation page",
+      "description": "Fetch the full content of a specific SageOx documentation page by URL or slug.",
+      "tags": [
+        "docs",
+        "read"
+      ]
+    }
+  ],
+  "mcpEndpoint": "https://sageox.ai/api/docs-mcp"
+}
