@@ -1,0 +1,65 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/sageox-openapi-original.json
+note: >-
+  Entity graph derived from the OpenAPI resource paths, tags, and component
+  schemas. Relationships are inferred from the platform model (teams own repos,
+  repos accrue recordings/runs) and the URL hierarchy; SageOx does not publish an
+  object reference with id-prefixes, so relationship cardinalities are best-effort.
+entities:
+- name: User
+  schema: '#/components/schemas/User'
+  paths: [/users, /session, /me]
+  relationships:
+  - { type: belongs_to_many, target: Team, via: memberships }
+  - { type: has_many, target: Notification, via: user }
+  - { type: has_many, target: ApiKey, via: owner }
+  - { type: has_many, target: Device, via: owner }
+- name: Team
+  paths: [/teams]
+  relationships:
+  - { type: has_many, target: User, via: members }
+  - { type: has_many, target: Repository, via: team }
+  - { type: has_many, target: Recording, via: team }
+- name: Repository
+  paths: [/repos, /repo]
+  relationships:
+  - { type: belongs_to, target: Team, via: team }
+  - { type: has_many, target: Recording, via: repo }
+  - { type: has_many, target: Run, via: repo }
+- name: Recording
+  paths: [/recordings]
+  relationships:
+  - { type: belongs_to, target: Repository, via: repo }
+  - { type: has_many, target: Photo, via: recording }
+- name: Run
+  paths: [/runs]
+  relationships:
+  - { type: belongs_to, target: Repository, via: repo }
+- name: Notification
+  schema: '#/components/schemas/NotificationDTO'
+  paths: [/notifications]
+  relationships:
+  - { type: belongs_to, target: User, via: user }
+- name: Device
+  paths: [/devices]
+  note: Ox Dot capture hardware; has firmware OTA + admin endpoints.
+  relationships:
+  - { type: belongs_to, target: User, via: owner }
+- name: ApiKey
+  paths: [/api-keys]
+  relationships:
+  - { type: belongs_to, target: User, via: owner }
+- name: Session
+  schema: '#/components/schemas/Session'
+  paths: [/session]
+  relationships:
+  - { type: belongs_to, target: User, via: user }
+support_schemas:
+- PaginationMeta
+- ErrorResponse
+- SuccessResponse
+- ChatMessage
+- ChatCompletionRequest
+- ChatCompletionResponse
+- OpenAIError

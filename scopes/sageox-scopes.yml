@@ -1,0 +1,30 @@
+generated: '2026-07-21'
+method: searched
+source: well-known/sageox-openid-configuration.json
+docs: https://sageox.ai/docs/mcp
+schemes:
+- name: oauth2
+  source: well-known/sageox-oauth-authorization-server.json
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://sageox.ai/api/auth/oauth2/authorize
+    tokenUrl: https://sageox.ai/api/auth/oauth2/token
+    pkce: S256
+scopes:
+- scope: openid
+  description: OpenID Connect — issue an ID token identifying the user.
+  flows: [authorizationCode]
+- scope: profile
+  description: Access the user's basic profile claims (name).
+  flows: [authorizationCode]
+- scope: email
+  description: Access the user's email and email_verified claims.
+  flows: [authorizationCode]
+- scope: offline_access
+  description: Issue a refresh token for long-lived / offline access.
+  flows: [authorizationCode]
+notes: >-
+  Scopes are the OAuth/OIDC authorization-server scopes advertised in the
+  discovery documents. MCP client connections request a scoped grant mapped to
+  the user's SageOx account; per-resource access is further constrained by the
+  user's team/bubble permissions rather than by additional OAuth scopes.

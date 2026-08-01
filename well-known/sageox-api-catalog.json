@@ -1,0 +1,19 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://sageox.ai",
+      "service-desc": [
+        {
+          "href": "https://sageox.ai/openapi.json",
+          "type": "application/json"
+        }
+      ],
+      "mcp": [
+        {
+          "href": "https://sageox.ai/api/v1/mcp",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}

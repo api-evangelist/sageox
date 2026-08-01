@@ -1,0 +1,70 @@
+generated: '2026-07-21'
+method: searched
+source: https://sageox.ai/docs/cli
+name: ox
+description: >-
+  The Ox CLI — "the hivemind for human-agent teams." Records team context once
+  and recalls it across AI coding agents (Claude Code, Codex CLI, Cursor,
+  Windsurf, Cline), machines, and teammates. Written in Go, MIT-licensed.
+binary: ox
+install:
+- method: curl
+  command: curl -sSL https://raw.githubusercontent.com/sageox/ox/main/scripts/install.sh | bash
+  platforms: [macOS, Linux, FreeBSD]
+- method: homebrew
+  command: brew install sageox/tap/ox
+- method: go
+  command: go install github.com/sageox/ox/cmd/ox@latest
+- method: source
+  command: git clone https://github.com/sageox/ox.git && cd ox && make build && make install
+config:
+  global: ~/.config/sageox/
+  local: .sageox/config.yaml
+global_flags:
+- --verbose
+- --json
+- --no-interactive
+command_groups:
+- group: Authentication
+  commands:
+  - ox login
+  - ox logout
+  - ox status
+- group: Setup
+  commands:
+  - ox init
+  - ox doctor --fix
+- group: Team Knowledge
+  commands:
+  - ox query
+  - ox team
+  description: Query codebases and past work, manage team memberships, import recordings.
+- group: Code
+  commands:
+  - ox code search
+  - ox code index
+  description: Semantic search and indexing over the codebase (CodeDB).
+- group: Memory
+  commands:
+  - ox distill
+  description: Distill key decisions from discussions into Knowledge Bubbles.
+- group: Agent Integration
+  commands:
+  - ox agent prime
+  description: Prime AI coworkers with team context and manage sessions.
+- group: Services / Utilities
+  commands:
+  - ox daemon
+  - ox sync
+  - ox dashboard
+  - ox version
+key_flows:
+- Authenticate then initialize a repo:  ox login && ox init
+- Load team context into an agent session:  ox agent prime
+- Search past work across agents:  ox query
+- Diagnose/repair setup:  ox doctor --fix
+notes: >-
+  Command surface captured from the published CLI docs; group names and the
+  documented flagship commands (login/init/status/query/agent prime/doctor) are
+  verbatim, sub-command spellings within Code/Memory/Team groups are
+  representative of the documented capability groupings.

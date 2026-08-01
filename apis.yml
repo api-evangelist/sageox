@@ -14,7 +14,251 @@ created: '2026-07-17'
 modified: '2026-07-17'
 tags:
 - Company
-apis: []
+apis:
+- aid: sageox:sageox-admin-api
+  name: Sageox Admin API
+  description: >-
+    Administrative analytics, session management, and system operations. Includes active session counts,
+    user analytics, and management endpoints restricted to admin roles.
+  tags:
+  - Admin
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-admin-api-openapi.yml
+- aid: sageox:sageox-agentx-api
+  name: Sageox AgentX API
+  description: >-
+    Multi-tenant telemetry platform for CLI tools and AI agents. Register applications,
+
+    ingest events via API key authentication, and query analytics through the dashboard API.
+
+
+    **Two authentication models:**
+
+    - **Capture endpoint** (`POST /agentx/capture`): API key (`axk_...`) in `Authorization: Bearer` header.
+    Designed for embedding in open-source CLIs.
+
+    - **Dashboard + CRUD**: JWT authentication with team membership verification per app.
+
+
+    **Key concepts:**
+
+    - **Events** are the core data unit — named, timestamped, with arbitrary JSONB properties
+
+    - **`distinct_id`** identifies a device/machine (SDK-generated UUID, not PII)
+
+    - **`$user_id`** (optional, in properties) correlates events to a logical user
+
+    - **Friction events** follow a convention: `friction.*` event names with `kind`, `actor`, `command`
+    properties
+  tags:
+  - AgentX
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-agentx-api-openapi.yml
+- aid: sageox:sageox-api-keys-api
+  name: Sageox API Keys API
+  description: The API Keys API from Sageox — 2 operation(s) for api keys.
+  tags:
+  - API Keys
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-api-keys-api-openapi.yml
+- aid: sageox:sageox-auth-api
+  name: Sageox Auth API
+  description: >-
+    Session management and token lifecycle. Validates JWT tokens issued by Better Auth, returns session
+    details and user identity. Used by both web app and CLI for authentication verification.
+  tags:
+  - Auth
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-auth-api-openapi.yml
+- aid: sageox:sageox-cli-api
+  name: Sageox CLI API
+  description: >-
+    Integration endpoints for the `ox` CLI tool. Includes device flow authentication (code request → polling
+    → token exchange), server-side diagnostics, repository initialization, and friction event tracking
+    for UX telemetry.
+  tags:
+  - CLI
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-cli-api-openapi.yml
+- aid: sageox:sageox-devices-api
+  name: Sageox Devices API
+  description: The Devices API from Sageox — 7 operation(s) for devices.
+  tags:
+  - Devices
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-devices-api-openapi.yml
+- aid: sageox:sageox-firmware-admin-api
+  name: Sageox Firmware Admin API
+  description: The Firmware Admin API from Sageox — 9 operation(s) for firmware admin.
+  tags:
+  - Firmware Admin
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-firmware-admin-api-openapi.yml
+- aid: sageox:sageox-firmware-ota-api
+  name: Sageox Firmware OTA API
+  description: The Firmware OTA API from Sageox — 1 operation(s) for firmware ota.
+  tags:
+  - Firmware OTA
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-firmware-ota-api-openapi.yml
+- aid: sageox:sageox-git-api
+  name: Sageox Git API
+  description: >-
+    Browse repository files, view commits, compare branches, and manage the Ledger. The Ledger stores
+    historical context (decisions, discussions, AI-generated summaries) as version-controlled files in
+    a GitLab-backed repository. Also handles repository uninstall and permanent deletion workflows.
+  tags:
+  - Git
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-git-api-openapi.yml
+- aid: sageox:sageox-guidance-api
+  name: Sageox Guidance API
+  description: >-
+    AI-generated guidance content and statistics. Provides contextual recommendations, best practices,
+    and insights derived from team context and recording analysis.
+  tags:
+  - Guidance
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-guidance-api-openapi.yml
+- aid: sageox:sageox-health-api
+  name: Sageox Health API
+  description: >-
+    Service health and readiness endpoints for orchestration platforms. The `/live` endpoint returns service
+    liveness; `/ready` confirms database connectivity and dependency availability.
+  tags:
+  - Health
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-health-api-openapi.yml
+- aid: sageox:sageox-llm-api
+  name: Sageox LLM API
+  description: >-
+    OpenAI-compatible chat completion endpoints. Proxies requests to configured LLM providers (Bedrock,
+    OpenAI) with model routing, token usage tracking, and streaming support. Follows the OpenAI `/v1/chat/completions`
+    format.
+  tags:
+  - LLM
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-llm-api-openapi.yml
+- aid: sageox:sageox-logs-api
+  name: Sageox Logs API
+  description: >-
+    Collect frontend application logs for centralized error tracking and debugging. Accepts batches of
+    structured log entries from web and CLI clients with severity levels and metadata.
+  tags:
+  - Logs
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-logs-api-openapi.yml
+- aid: sageox:sageox-miscellaneous-api
+  name: Sageox Miscellaneous API
+  description: The Miscellaneous API from Sageox — 12 operation(s) for miscellaneous.
+  tags:
+  - Miscellaneous
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-miscellaneous-api-openapi.yml
+- aid: sageox:sageox-notifications-api
+  name: Sageox Notifications API
+  description: >-
+    Read, manage, and stream real-time notifications. Supports SSE (Server-Sent Events) for live delivery,
+    bulk operations (mark read, delete), and preference-based filtering. Notifications originate from
+    workflows, recordings, and system events.
+  tags:
+  - Notifications
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-notifications-api-openapi.yml
+- aid: sageox:sageox-photos-api
+  name: Sageox Photos API
+  description: >-
+    Upload and manage photos with automatic OCR text extraction. Photos can be scoped to a repository
+    (linked to recordings/discussions) or a team (shared resources). Uses presigned URLs for direct-to-storage
+    uploads.
+  tags:
+  - Photos
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-photos-api-openapi.yml
+- aid: sageox:sageox-public-api
+  name: Sageox Public API
+  description: >-
+    Unauthenticated endpoints for public-facing data. Returns team profiles, public recording metadata,
+    shared conventions, and repository status without requiring authentication. Rate limited per IP.
+  tags:
+  - Public
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-public-api-openapi.yml
+- aid: sageox:sageox-recordings-api
+  name: Sageox Recordings API
+  description: >-
+    Full lifecycle management for discussion recordings: chunked upload, transcription, speaker identification,
+    AI-generated summaries, decisions, and action items. Recordings feed into the repository Ledger. Supports
+    both audio upload and real-time recording sessions via Temporal workflows.
+  tags:
+  - Recordings
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-recordings-api-openapi.yml
+- aid: sageox:sageox-repositories-api
+  name: Sageox Repositories API
+  description: The Repositories API from Sageox — 6 operation(s) for repositories.
+  tags:
+  - Repositories
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-repositories-api-openapi.yml
+- aid: sageox:sageox-repository-api
+  name: Sageox Repository API
+  description: >-
+    Repository initialization and merge operations. `initRepo` creates or reconnects a repository with
+    SageOx (idempotent). `mergeRepos` combines ledger data when repositories are merged.
+  tags:
+  - Repository
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-repository-api-openapi.yml
+- aid: sageox:sageox-runs-api
+  name: Sageox runs API
+  description: The runs API from Sageox — 7 operation(s) for runs.
+  tags:
+  - runs
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-runs-api-openapi.yml
+- aid: sageox:sageox-teams-api
+  name: Sageox Teams API
+  description: >-
+    Create and manage teams with hierarchical membership (owner, admin, member). Handles invitations via
+    email with role assignment, team-wide conventions and norms, and child-team relationships. Teams are
+    the primary organizational unit in SageOx.
+  tags:
+  - Teams
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-teams-api-openapi.yml
+- aid: sageox:sageox-users-api
+  name: Sageox Users API
+  description: >-
+    Manage user profiles, preferences, API keys, and account settings. Preferences control notification
+    delivery, theme, and feature opt-ins. API keys authenticate CLI and programmatic access.
+  tags:
+  - Users
+  properties:
+  - type: OpenAPI
+    url: openapi/sageox-users-api-openapi.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com

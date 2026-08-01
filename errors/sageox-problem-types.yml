@@ -1,0 +1,58 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/sageox-openapi-original.json
+format: custom-envelope
+envelope:
+  schema: '#/components/schemas/ErrorResponse'
+  shape:
+    success: false
+    error: "Human-readable message (do not parse; branch on HTTP status)"
+  note: >-
+    Standard error response returned by all endpoints on failure. The LLM proxy
+    endpoints (createChatCompletion, listModels) instead return an OpenAI-style
+    OpenAIError envelope ({error:{message,type,code}}) for OpenAI SDK compatibility.
+problems:
+- status: 400
+  title: Bad Request
+  meaning: Invalid request parameters / validation failure.
+  occurrences: 123
+- status: 401
+  title: Unauthorized
+  meaning: Missing, invalid, or expired JWT bearer token.
+  occurrences: 161
+- status: 403
+  title: Forbidden
+  meaning: Authenticated but not permitted for this team/repo/resource.
+  occurrences: 76
+- status: 404
+  title: Not Found
+  meaning: Resource does not exist or is not visible to the caller.
+  occurrences: 121
+- status: 409
+  title: Conflict
+  meaning: State conflict (e.g. duplicate, already-exists, concurrent update).
+  occurrences: 22
+- status: 410
+  title: Gone
+  meaning: Resource permanently removed (e.g. expired run/recording).
+  occurrences: 3
+- status: 413
+  title: Payload Too Large
+  meaning: Upload (recording/photo/audio) exceeds size limits.
+  occurrences: 2
+- status: 429
+  title: Too Many Requests
+  meaning: Rate limit or quota exceeded. See Retry-After and X-SageOx-Rate-Limit-Remaining / X-SageOx-Quota-Remaining headers.
+  occurrences: 5
+- status: 500
+  title: Internal Server Error
+  meaning: Unexpected server error.
+  occurrences: 108
+- status: 503
+  title: Service Unavailable
+  meaning: Dependency/health degraded (see /health readiness).
+  occurrences: 5
+notes: >-
+  Derived from OpenAPI 4xx/5xx responses across 223 operations. No
+  application/problem+json (RFC 9457) responses are declared; the API uses the
+  ErrorResponse envelope with HTTP status for control flow.

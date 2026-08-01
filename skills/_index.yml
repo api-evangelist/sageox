@@ -1,0 +1,12 @@
+generated: '2026-07-21'
+method: generated
+source: openapi/sageox-openapi-original.json
+skills:
+- file: sageox-capture-a-recording.md
+  name: Capture and complete a repo recording
+  api: openapi/sageox-openapi-original.json
+  operations: [startRecordingRepo, getChunkURLRepo, chunkHeartbeatRepo, completeRecordingRepo, getTranscriptRepo, getDecisionsRepo]
+- file: sageox-provision-api-access.md
+  name: Provision programmatic API access
+  api: openapi/sageox-openapi-original.json
+  operations: [getCurrentUser, createAPIKey, listAPIKeys, getReadiness]

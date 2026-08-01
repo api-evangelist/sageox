@@ -1,0 +1,28 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/sageox-openapi-original.json
+versioning:
+  scheme: uri-path
+  current: v1
+  note: Newer endpoints namespaced under /api/v1/ (e.g. /api/v1/mcp).
+health:
+  liveness: GET /health (getLiveness)
+  readiness: GET /ready (getReadiness)
+deprecation:
+  policy_url: null
+  sunset_header: false
+  note: >-
+    No published deprecation policy or Sunset/Deprecation header support found;
+    deprecation is expressed in-spec via `deprecated: true` on individual
+    operations (Run v1 endpoints superseded by newer run flow, adoptTeam).
+deprecated_operations:
+- openapi/sageox-openapi-original.json#initRun
+- openapi/sageox-openapi-original.json#updateRun
+- openapi/sageox-openapi-original.json#completeRunLegacy
+- openapi/sageox-openapi-original.json#adoptTeam
+status_page: null
+sla: null
+notes: >-
+  No public status page or SLA page was located during this pass. The API
+  exposes liveness/readiness probes for operational health. Deprecated
+  operations derived from OpenAPI `deprecated` flags.

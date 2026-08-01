@@ -1,0 +1,52 @@
+generated: '2026-07-21'
+method: searched
+source: openapi/sageox-openapi-original.json
+docs: https://sageox.ai/docs
+summary:
+  types:
+  - http
+  - oauth2
+  - openIdConnect
+  oauth2_flows:
+  - authorizationCode
+  pkce: S256
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: JWT
+  description: |-
+    JWT token obtained from the auth service (/api/auth/token).
+    Token is validated using JWKS from the auth service (https://sageox.ai/api/auth/jwks).
+    Required claims: sub (user_id), email, name, tier.
+    All REST API endpoints require: Authorization: Bearer <token>.
+  sources:
+  - openapi/sageox-openapi-original.json
+- name: oauth2
+  type: oauth2
+  description: >-
+    OAuth 2.0 / OpenID Connect authorization server (Better Auth). Advertised via
+    /.well-known/oauth-authorization-server and /.well-known/openid-configuration.
+    Used for the MCP server's scoped grants and third-party client authorization.
+  flows:
+  - flow: authorizationCode
+    authorizationUrl: https://sageox.ai/api/auth/oauth2/authorize
+    tokenUrl: https://sageox.ai/api/auth/oauth2/token
+    userinfoUrl: https://sageox.ai/api/auth/oauth2/userinfo
+    registrationUrl: https://sageox.ai/api/auth/oauth2/register
+    jwksUri: https://sageox.ai/api/auth/jwks
+    pkce: S256
+    scopes:
+    - openid
+    - profile
+    - email
+    - offline_access
+  sources:
+  - well-known/sageox-openid-configuration.json
+  - well-known/sageox-oauth-authorization-server.json
+cli_auth:
+  description: >-
+    The Ox CLI uses a device-authorization flow — it initiates a device flow to
+    obtain initial credentials, exchanges the device code for a JWT, stores it
+    securely, and refreshes when expired.
+  source: openapi/sageox-openapi-original.json

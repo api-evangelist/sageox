@@ -1,0 +1,36 @@
+# SageOx
+
+> The hivemind for human-agent teams. SageOx captures team discussions, decisions, and AI coding-agent work sessions into a searchable Ledger (per-repo history) and Team Context (team-wide knowledge), so agents inherit full context instead of starting cold. Integrate via the Ox CLI, the hosted Ox MCP server, and a REST API. Seattle-based; $15M seed (May 2026) led by Canaan Partners.
+
+## APIs
+
+- [SageOx REST API (OpenAPI 3.1)](https://sageox.ai/openapi.json): 223 operations across repositories, recordings, teams, users, notifications, runs, API keys, devices (Ox Dot), and an OpenAI-compatible LLM proxy. JWT bearer auth.
+- [Ox MCP server](https://sageox.ai/api/v1/mcp): hosted Model Context Protocol endpoint with OAuth-scoped grants; query team memberships, search team knowledge, and save sessions to Knowledge Bubbles.
+
+## Docs
+
+- [Documentation](https://sageox.ai/docs): quickstarts, Team Context, capture methods, agent integration.
+- [CLI docs](https://sageox.ai/docs/cli): the `ox` Go CLI — login, init, query, agent prime, doctor.
+- [MCP docs](https://sageox.ai/docs/mcp): connect Cursor, VS Code, Windsurf, Claude Desktop, ChatGPT.
+- [API reference (OpenAPI)](https://sageox.ai/openapi.json)
+
+## Discovery
+
+- [API catalog](https://sageox.ai/.well-known/api-catalog): RFC 9727 linkset advertising the OpenAPI + MCP endpoint.
+- [OpenID configuration](https://sageox.ai/.well-known/openid-configuration)
+- [OAuth authorization server](https://sageox.ai/.well-known/oauth-authorization-server)
+
+## Packages
+
+- [Ox CLI (Go)](https://pkg.go.dev/github.com/sageox/ox): `go install github.com/sageox/ox/cmd/ox@latest` or `brew install sageox/tap/ox`.
+- [agentx (Go)](https://github.com/sageox/agentx): detect/configure 14 AI coding agents.
+- [frictionax (Go)](https://github.com/sageox/frictionax): CLI friction telemetry.
+
+## Company
+
+- [Blog](https://sageox.ai/blog)
+- [About](https://sageox.ai/about)
+- [Careers](https://sageox.ai/careers)
+- [GitHub](https://github.com/sageox)
+- [Terms of Service](https://sageox.ai/terms)
+- [Privacy Policy](https://sageox.ai/privacy)

@@ -1,0 +1,42 @@
+generated: '2026-07-21'
+method: searched
+source: https://github.com/sageox
+packages:
+- language: go
+  registry: pkg.go.dev
+  name: github.com/sageox/ox
+  url: https://pkg.go.dev/github.com/sageox/ox
+  install: go install github.com/sageox/ox/cmd/ox@latest
+  version: v0.12.0
+  official: true
+  note: The Ox CLI — persistent team context for AI coding agents. MIT, ~98% Go.
+- language: shell
+  registry: github
+  name: sageox/ox install script
+  url: https://github.com/sageox/ox
+  install: curl -sSL https://raw.githubusercontent.com/sageox/ox/main/scripts/install.sh | bash
+  official: true
+  note: One-line installer for macOS/Linux/FreeBSD.
+- language: ruby
+  registry: homebrew
+  name: sageox/tap
+  url: https://github.com/sageox/homebrew-tap
+  install: brew install sageox/tap/ox
+  official: true
+  note: Homebrew tap for SageOx CLI tools.
+- language: go
+  registry: pkg.go.dev
+  name: github.com/sageox/agentx
+  url: https://pkg.go.dev/github.com/sageox/agentx
+  install: go get github.com/sageox/agentx
+  official: true
+  note: >-
+    Library to detect, configure, and extend 14 AI coding agents (Claude Code,
+    Codex, Cursor, Copilot, ...) from Go tools.
+- language: go
+  registry: pkg.go.dev
+  name: github.com/sageox/frictionax
+  url: https://pkg.go.dev/github.com/sageox/frictionax
+  install: go get github.com/sageox/frictionax
+  official: true
+  note: CLI friction detection, correction, and telemetry for Go command-line tools (Agent Experience).

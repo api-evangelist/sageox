@@ -1,0 +1,36 @@
+generated: '2026-07-21'
+method: searched
+status: published
+source: https://sageox.ai/docs/mcp
+server:
+  name: SageOx MCP (Ox MCP)
+  transport: http
+  url: https://sageox.ai/api/v1/mcp
+  auth:
+    type: oauth2
+    description: >-
+      Connecting an AI tool performs a scoped OAuth grant mapped to the user's
+      SageOx account; the server only exposes resources the authenticated user
+      can access. Grants are managed/revocable at /settings/security.
+    authorization_server: https://sageox.ai/.well-known/oauth-authorization-server
+  connect_wizard: https://sageox.ai/connect/mcp
+  clients:
+  - Claude Desktop
+  - Cursor
+  - VS Code
+  - Windsurf
+  - ChatGPT
+  - Any MCP-compatible assistant
+tools:
+- name: query_team_memberships
+  description: Query the teams the authenticated user belongs to within SageOx.
+- name: search_team_knowledge
+  description: Search team knowledge, discussions, and past sessions.
+- name: save_session_to_bubble
+  description: Save a conversation as a session into a specific Knowledge Bubble.
+- name: access_bubble_content
+  description: Read Knowledge Bubble content the user is permitted to see.
+notes: >-
+  Tool names are descriptive labels derived from the documented capabilities at
+  /docs/mcp; the exact wire tool identifiers are enumerated by the live server
+  after OAuth. The MCP endpoint is also advertised in /.well-known/api-catalog.

@@ -1,0 +1,46 @@
+generated: '2026-07-21'
+method: derived
+source: openapi/sageox-openapi-original.json
+docs: https://sageox.ai/docs
+authentication:
+  style: bearer-jwt
+  header: 'Authorization: Bearer <token>'
+  ref: authentication/sageox-authentication.yml
+pagination:
+  style: offset-limit
+  request_params: [limit, offset]
+  response_object: PaginationMeta
+  response_fields: [total, limit, offset, hasMore]
+  rule: "Use offset + limit for the next page; stop when hasMore is false."
+  note: Present on ~11 list operations; PaginationMeta is included in all list responses.
+idempotency:
+  supported: false
+  note: >-
+    No Idempotency-Key header or idempotency parameter is documented in the
+    OpenAPI. Not asserted.
+rate_limiting:
+  signaled: true
+  headers:
+  - Retry-After
+  - X-SageOx-Rate-Limit-Remaining
+  - X-SageOx-Quota-Remaining
+  - X-SageOx-Pause-Until
+  status: 429
+  note: >-
+    SageOx also emits Agent-Experience friction headers (X-SageOx-Friction-Status,
+    X-SageOx-Sample-Rate) to signal CLI/agent pacing.
+error_envelope:
+  shape: '{ success: false, error: string }'
+  schema: '#/components/schemas/ErrorResponse'
+  ref: errors/sageox-problem-types.yml
+  rule: "Do not parse the error string; branch on HTTP status codes."
+versioning:
+  style: uri-path
+  current: v1
+  note: MCP + newer endpoints are namespaced under /api/v1/ (e.g. /api/v1/mcp).
+content_type: application/json
+llm_proxy:
+  compatible_with: openai
+  note: >-
+    /v1-style chat completion endpoints (listModels, createChatCompletion) mirror
+    the OpenAI Chat Completions contract and return OpenAIError on failure.

@@ -1,0 +1,26 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for SageOx API
+  version: 1.0.0
+extends: openapi/sageox-openapi-original.json
+actions:
+- target: $.info
+  update:
+    x-apievangelist-enriched: '2026-07-21'
+    x-apievangelist-artifacts:
+      authentication: authentication/sageox-authentication.yml
+      scopes: scopes/sageox-scopes.yml
+      conventions: conventions/sageox-conventions.yml
+      errors: errors/sageox-problem-types.yml
+      lifecycle: lifecycle/sageox-lifecycle.yml
+      data-model: data-model/sageox-data-model.yml
+      conformance: conformance/sageox-conformance.yml
+      mcp: mcp/sageox-mcp.yml
+      well-known: well-known/sageox-well-known.yml
+- target: $.info
+  update:
+    x-apievangelist-notes: >-
+      OpenAPI 3.1 discovered via /.well-known/api-catalog. JWT bearer auth with an
+      OAuth2/OIDC authorization server; hosted MCP server at /api/v1/mcp;
+      OpenAI-compatible LLM proxy. Errors use a custom { success, error } envelope
+      (not RFC 9457); pagination is offset/limit with PaginationMeta.
