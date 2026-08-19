@@ -1,0 +1,69 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Firmware OTA API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Firmware OTA",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Check for firmware updates",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/firmware/latest",
+            "headers": [
+              {
+                "name": "X-Device-ID",
+                "value": ""
+              },
+              {
+                "name": "X-Device-Type",
+                "value": ""
+              },
+              {
+                "name": "User-Agent",
+                "value": ""
+              }
+            ],
+            "params": [
+              {
+                "name": "device",
+                "value": "",
+                "type": "query",
+                "description": "Hardware type identifier (e.g., `scribe`, `clip`)."
+              },
+              {
+                "name": "version",
+                "value": "",
+                "type": "query",
+                "description": "Currently running firmware version (semver format)."
+              },
+              {
+                "name": "channel",
+                "value": "",
+                "type": "query",
+                "description": "Release channel to check. Defaults to `stable`."
+              }
+            ]
+          },
+          "docs": "Device-facing endpoint that returns the latest available firmware manifest\nfor the specified device type. The device polls this endpoint periodically\nand compares the returned version against its current firmware.\n\nThis endpoint is **unauthenticated** (devices have no JWT) but rate-limited\nby X-Device-ID header. Returns 204 No Content when no update is available.\n\nThe response `url` field contains a pre-signed S3 URL (15-minute TTL) for\ndirect firmware binary download. The device fetches this UR"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

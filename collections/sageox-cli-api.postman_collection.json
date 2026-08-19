@@ -1,0 +1,1090 @@
+{
+  "item": [
+    {
+      "id": "33d2ecf1-bac0-45ec-8578-9cef48c3b0e4",
+      "name": "CLI",
+      "description": {
+        "content": "Integration endpoints for the `ox` CLI tool. Includes device flow authentication (code request → polling → token exchange), server-side diagnostics, repository initialization, and friction event tracking for UX telemetry.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "c79f61b1-bc95-4b49-9d45-68ce7b5e53c6",
+          "name": "Exchange session token for JWT",
+          "request": {
+            "name": "Exchange session token for JWT",
+            "description": {
+              "content": "Exchanges an opaque session token for a JWT access token.\nUsed by ox-cli after device flow authentication to obtain a short-lived JWT.\n\n**Authentication:** Public (no auth required)\n- Request can include Bearer token (opaque session token from device flow)\n- Returns JWT valid for 15 minutes\n\n**Rate limit:** 30 requests/minute per IP address\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "cli",
+                "auth",
+                "token"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "713598d8-3e74-4f13-8fed-65c8141af6f9",
+              "name": "Token exchange successful",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "auth",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "disabled": false,
+                    "description": "Optional session token to exchange. If not provided or already a JWT, validates and returns as-is.",
+                    "key": "Authorization",
+                    "value": "Bearer opaque-session-token-from-device-flow"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"access_token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJ1c3JfMTIzNDU2IiwiZXhwIjoxNzI5NjU5MTAwfQ.sign\",\n  \"token_type\": \"Bearer\",\n  \"expires_in\": 900\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d963d405-e387-4a89-b86a-e9e34e8d0980",
+              "name": "Invalid or expired token",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "auth",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "disabled": false,
+                    "description": "Optional session token to exchange. If not provided or already a JWT, validates and returns as-is.",
+                    "key": "Authorization",
+                    "value": "Bearer opaque-session-token-from-device-flow"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"missing bearer token\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6400e723-beaf-4833-b820-6fb1a4598778",
+              "name": "Server error during token exchange",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "auth",
+                    "token"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "disabled": false,
+                    "description": "Optional session token to exchange. If not provided or already a JWT, validates and returns as-is.",
+                    "key": "Authorization",
+                    "value": "Bearer opaque-session-token-from-device-flow"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "53d5973a-53b0-422c-ab50-80d86460be98",
+          "name": "Get server-side diagnostic context for CLI",
+          "request": {
+            "name": "Get server-side diagnostic context for CLI",
+            "description": {
+              "content": "Returns comprehensive server-side context for client troubleshooting.\nUsed by `ox doctor` command to verify connectivity, configuration, and feature availability.\n\nIncludes user info, repositories, teams with git configurations, integration endpoints,\nfeature flags, expected environment variables, and server metadata.\n\n**Authentication:** Bearer token required\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "cli",
+                "doctor",
+                "context"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "9ac8aff4-6905-4800-9a92-cbdec693ea7d",
+              "name": "Diagnostic context retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "doctor",
+                    "context"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"repositories\": [\n    {\n      \"id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n      \"type\": \"git\",\n      \"status\": \"active\",\n      \"created_at\": \"2025-12-18T10:30:00Z\",\n      \"teams\": [\n        \"team_abc123xyz\",\n        \"team_def456uvw\"\n      ],\n      \"git\": {\n        \"provider\": \"gitlab\",\n        \"default_branch\": \"main\",\n        \"remote_url\": \"http://localhost:8929/group/project.git\"\n      }\n    },\n    {\n      \"id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n      \"type\": \"git\",\n      \"status\": \"active\",\n      \"created_at\": \"2025-12-18T10:30:00Z\",\n      \"teams\": [\n        \"team_abc123xyz\",\n        \"team_def456uvw\"\n      ],\n      \"git\": {\n        \"provider\": \"gitlab\",\n        \"default_branch\": \"main\",\n        \"remote_url\": \"http://localhost:8929/group/project.git\"\n      }\n    }\n  ],\n  \"teams\": [\n    {\n      \"id\": \"team_abc123xyz\",\n      \"slug\": \"my-team\",\n      \"name\": \"My Team\",\n      \"role\": \"owner\",\n      \"git\": {\n        \"remote_url\": \"http://localhost:8929/group/norms.git\",\n        \"default_branch\": \"main\",\n        \"provider\": \"gitlab\"\n      },\n      \"norms_url\": \"http://localhost:8929/group/norms.git\"\n    },\n    {\n      \"id\": \"team_abc123xyz\",\n      \"slug\": \"my-team\",\n      \"name\": \"My Team\",\n      \"role\": \"owner\",\n      \"git\": {\n        \"remote_url\": \"http://localhost:8929/group/norms.git\",\n        \"default_branch\": \"main\",\n        \"provider\": \"gitlab\"\n      },\n      \"norms_url\": \"http://localhost:8929/group/norms.git\"\n    }\n  ],\n  \"endpoints\": {\n    \"api\": \"http://localhost:3000\",\n    \"auth\": \"http://localhost:3000\",\n    \"gitlab\": \"http://localhost:8929\",\n    \"websocket\": \"ws://localhost:3000\"\n  },\n  \"features\": {\n    \"temporal\": true,\n    \"ocr\": false,\n    \"notifications\": {}\n  },\n  \"server\": {\n    \"version\": \"0.15.0\",\n    \"environment\": \"development\",\n    \"timestamp\": \"2025-12-18T10:30:00Z\"\n  },\n  \"user\": {\n    \"id\": \"usr_01aq5p00aq5p00aq5p\",\n    \"email\": \"user@example.com\",\n    \"name\": \"Jane Developer\",\n    \"tier\": \"pro\"\n  },\n  \"expected_env_vars\": [\n    {\n      \"type\": \"string\",\n      \"example\": \"http://localhost:3000\"\n    },\n    {\n      \"type\": \"string\",\n      \"example\": \"http://localhost:3000\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e883789c-58f6-4992-b19c-09de32933785",
+              "name": "Authentication required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "doctor",
+                    "context"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ba0a1562-40f5-46a0-9b9a-d2dbe9a038a0",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "doctor",
+                    "context"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "0dfd75a7-c7fc-466d-86d1-f79b88b4a3d0",
+          "name": "Submit CLI friction events",
+          "request": {
+            "name": "Submit CLI friction events",
+            "description": {
+              "content": "Accepts batched CLI friction events for UX improvement and friction analysis.\nUsed by ox-cli to report issues such as unknown commands, invalid flags, parsing errors, etc.\n\n**Authentication:** Optional (can be authenticated or public)\n- If authenticated, associates events with user account\n- If not authenticated, events are recorded anonymously\n\n**Events validation:**\n- Timestamp: RFC3339 format required\n- Kind: must be one of unknown-command, unknown-flag, missing-required, invalid-arg, parse-error\n- Actor: must be human, agent, or unknown\n- PathBucket: must be home, repo, or other\n- Input: max 500 characters\n- ErrorMsg: max 200 characters\n- MaxEventsPerRequest: 100 events per batch\n\n**Server feedback:**\n- X-SageOx-Friction-Status header indicates collection status (active, paused, sampling)\n- X-SageOx-Sample-Rate header (if sampling) indicates sample rate\n- X-SageOx-Pause-Until header (if paused) indicates when collection resumes\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "cli",
+                "friction"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"events\": [\n    {\n      \"ts\": \"<dateTime>\",\n      \"kind\": \"<string>\",\n      \"command\": \"<string>\",\n      \"actor\": \"<string>\",\n      \"path_bucket\": \"<string>\",\n      \"input\": \"<string>\",\n      \"error_msg\": \"<string>\",\n      \"subcommand\": \"<string>\",\n      \"agent_type\": \"<string>\",\n      \"suggestion\": \"<string>\"\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "b618a0a1-93a2-4d69-8b7a-4ceedec42525",
+              "name": "Events accepted and processed",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "friction"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Current friction collection status",
+                  "key": "X-SageOx-Friction-Status",
+                  "value": "active"
+                },
+                {
+                  "disabled": false,
+                  "description": "Sample rate if status is sampling (e.g., \"0.5\")",
+                  "key": "X-SageOx-Sample-Rate",
+                  "value": "0.5"
+                },
+                {
+                  "disabled": false,
+                  "description": "Resume time if status is paused",
+                  "key": "X-SageOx-Pause-Until",
+                  "value": "2025-12-18T11:30:45Z"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"accepted\": 2\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d640e0b7-c98a-4444-abbb-ca9a035bcd83",
+              "name": "Invalid request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "friction"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"No events provided\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f52ef12c-6d2d-4bc9-a735-4fc3206612b7",
+              "name": "Payload too large",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "friction"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Request Entity Too Large",
+              "code": 413,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a49ce4a1-f3e7-423f-9038-404c4b43654e",
+              "name": "Friction tracking not configured",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "friction"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Friction tracking not configured\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d87acd96-c442-4438-b7e8-2252c9e5806b",
+          "name": "List user's registered repositories",
+          "request": {
+            "name": "List user's registered repositories",
+            "description": {
+              "content": "Lists all repositories registered with SageOx for the authenticated user.\nReturns minimal repository information including ID, team associations, and registration time.\n\n**Authentication:** Bearer token required\n\n**Pagination:** Not implemented (returns all repos)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "cli",
+                "repos"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "caf26e33-6f03-48c7-b3af-aa20bd5dac4a",
+              "name": "List of user's repositories",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repos"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n    \"team_id\": \"team_abc123xyz\",\n    \"name\": \"my-project\",\n    \"created_at\": \"2025-12-18T10:30:00Z\"\n  },\n  {\n    \"repo_id\": \"repo_01934f5b-1234-7abc-9012-def456789012\",\n    \"team_id\": \"team_def456uvw\",\n    \"name\": \"another-project\",\n    \"created_at\": \"2025-12-10T08:15:00Z\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9e52fefc-0d06-4faf-9c06-5846aeb92557",
+              "name": "Authentication required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repos"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "b93dcda0-20f3-42c4-9606-34eedb1bce32",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repos"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f593fa3c-28c1-4639-a61e-3b0a8d844acf",
+          "name": "Initialize repository with CLI support",
+          "request": {
+            "name": "Initialize repository with CLI support",
+            "description": {
+              "content": "Registers a git repository with SageOx and creates an associated team.\n**Preferred route for ox-cli** (use instead of /api/v1/repo/init).\n\nSupports additional `teams` array parameter for multi-team repositories.\n\n**Authentication:** Optional\n- **Authenticated:** User becomes owner of newly created team\n- **Unauthenticated:** Creates orphan team (can be claimed later with claim code)\n\n**Idempotency:** If repo_id already exists, returns existing repo/team info with 200 status.\n\nTeams can be merged later via /api/v1/repo/merge endpoint.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "cli",
+                "repo",
+                "init"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"repo_id\": \"<string>\",\n  \"type\": \"<string>\",\n  \"init_at\": \"<dateTime>\",\n  \"repo_salt\": \"<string>\",\n  \"repo_remote_hashes\": [\n    \"<string>\",\n    \"<string>\"\n  ],\n  \"is_public\": \"<boolean>\",\n  \"created_by_email\": \"<email>\",\n  \"created_by_name\": \"<string>\",\n  \"teams\": [\n    \"<string>\",\n    \"<string>\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "524e051e-b4c7-4ef8-8506-140e6968a618",
+              "name": "Repository already exists (idempotent response)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repo",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n  \"type\": \"git\",\n  \"init_at\": \"2025-12-18T16:30:00Z\",\n  \"repo_salt\": \"abc123def456789abc123def456789abc123def456\",\n  \"repo_remote_hashes\": [\n    \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0\"\n  ],\n  \"is_public\": false,\n  \"created_by_email\": \"developer@example.com\",\n  \"created_by_name\": \"Developer Name\",\n  \"teams\": [\n    \"team_abc123xyz\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n  \"team_id\": \"team_abc123xyz\",\n  \"web_base_url\": \"https://sageox.ai\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "270f1f1b-d097-4b71-b5bf-9e47bcf820f1",
+              "name": "Repository registered successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repo",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n  \"type\": \"git\",\n  \"init_at\": \"2025-12-18T16:30:00Z\",\n  \"repo_salt\": \"abc123def456789abc123def456789abc123def456\",\n  \"repo_remote_hashes\": [\n    \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0\"\n  ],\n  \"is_public\": false,\n  \"created_by_email\": \"developer@example.com\",\n  \"created_by_name\": \"Developer Name\",\n  \"teams\": [\n    \"team_abc123xyz\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n  \"team_id\": \"team_abc123xyz\",\n  \"web_base_url\": \"https://sageox.ai\",\n  \"claim_code\": \"abc123xyz\",\n  \"claim_url\": \"https://sageox.ai/team/claim?code=abc123xyz&team=team_abc123xyz\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "674415b1-cb24-4966-aa8c-adfa6bfd5cf8",
+              "name": "Invalid request",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repo",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n  \"type\": \"git\",\n  \"init_at\": \"2025-12-18T16:30:00Z\",\n  \"repo_salt\": \"abc123def456789abc123def456789abc123def456\",\n  \"repo_remote_hashes\": [\n    \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0\"\n  ],\n  \"is_public\": false,\n  \"created_by_email\": \"developer@example.com\",\n  \"created_by_name\": \"Developer Name\",\n  \"teams\": [\n    \"team_abc123xyz\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"repo_id is required\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "e2d43ff4-3f96-47b7-aa80-7baa52373d59",
+              "name": "Internal server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "cli",
+                    "repo",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"repo_id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n  \"type\": \"git\",\n  \"init_at\": \"2025-12-18T16:30:00Z\",\n  \"repo_salt\": \"abc123def456789abc123def456789abc123def456\",\n  \"repo_remote_hashes\": [\n    \"sha256:a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0\"\n  ],\n  \"is_public\": false,\n  \"created_by_email\": \"developer@example.com\",\n  \"created_by_name\": \"Developer Name\",\n  \"teams\": [\n    \"team_abc123xyz\"\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:3000",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "f60fa133-c625-4a58-83c6-f183083db019",
+    "name": "SageOx Admin CLI API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n\n\nContact Support:\n Name: SageOx Team",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin CLI API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "CLI",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Exchange session token for JWT",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/cli/auth/token",
+            "headers": [
+              {
+                "name": "Authorization",
+                "value": ""
+              }
+            ]
+          },
+          "docs": "Exchanges an opaque session token for a JWT access token.\nUsed by ox-cli after device flow authentication to obtain a short-lived JWT.\n\n**Authentication:** Public (no auth required)\n- Request can include Bearer token (opaque session token from device flow)\n- Returns JWT valid for 15 minutes\n\n**Rate limit:** 30 requests/minute per IP address\n"
+        },
+        {
+          "info": {
+            "name": "Get server-side diagnostic context for CLI",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/cli/doctor/context"
+          },
+          "docs": "Returns comprehensive server-side context for client troubleshooting.\nUsed by `ox doctor` command to verify connectivity, configuration, and feature availability.\n\nIncludes user info, repositories, teams with git configurations, integration endpoints,\nfeature flags, expected environment variables, and server metadata.\n\n**Authentication:** Bearer token required\n"
+        },
+        {
+          "info": {
+            "name": "Submit CLI friction events",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/cli/friction",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Accepts batched CLI friction events for UX improvement and friction analysis.\nUsed by ox-cli to report issues such as unknown commands, invalid flags, parsing errors, etc.\n\n**Authentication:** Optional (can be authenticated or public)\n- If authenticated, associates events with user account\n- If not authenticated, events are recorded anonymously\n\n**Events validation:**\n- Timestamp: RFC3339 format required\n- Kind: must be one of unknown-command, unknown-flag, missing-required, invalid-arg, parse-e"
+        },
+        {
+          "info": {
+            "name": "List user's registered repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/cli/repos"
+          },
+          "docs": "Lists all repositories registered with SageOx for the authenticated user.\nReturns minimal repository information including ID, team associations, and registration time.\n\n**Authentication:** Bearer token required\n\n**Pagination:** Not implemented (returns all repos)\n"
+        },
+        {
+          "info": {
+            "name": "Initialize repository with CLI support",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/cli/repo/init",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Registers a git repository with SageOx and creates an associated team.\n**Preferred route for ox-cli** (use instead of /api/v1/repo/init).\n\nSupports additional `teams` array parameter for multi-team repositories.\n\n**Authentication:** Optional\n- **Authenticated:** User becomes owner of newly created team\n- **Unauthenticated:** Creates orphan team (can be claimed later with claim code)\n\n**Idempotency:** If repo_id already exists, returns existing repo/team info with 200 status.\n\nTeams can be merged"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

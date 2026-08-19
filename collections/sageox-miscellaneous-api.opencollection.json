@@ -1,0 +1,196 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Miscellaneous API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Miscellaneous",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get platform feature flags",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/config/features"
+          },
+          "docs": "Returns platform-level feature flags that determine which features are enabled/disabled.\nUsed by frontend and clients to conditionally render UI, show settings, or enable features.\n\n**Feature flags:**\n- **photos:** Photo/media features enabled\n- **notifications:** Notification delivery channels configuration\n\nFor user-targeted feature flags via PostHog, use the frontend SDK with user context.\n\n**Authentication:** Not required (public endpoint)\n**Rate limit:** Standard rate limiting applies\n"
+        },
+        {
+          "info": {
+            "name": "Get signing keys (JWKS format)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/signing-keys"
+          },
+          "docs": "Returns the global SageOx signing keys in JWKS (JSON Web Key Set) format per RFC 7517.\nUsed to verify signatures on SAGEOX.md files and other signed artifacts.\n\n**Format:** JWKS-style response with Ed25519 public keys\n**Key type:** OKP (Octet Key Pair) with Ed25519 curve\n**Algorithm:** EdDSA\n\n**Caching:**\n- Fresh for 10 hours (max-age=36000)\n- Serve stale up to 7 days while revalidating in background\n- CDN-safe with public Cache-Control header\n\n**Authentication:** Not required (public endpoint)\n"
+        },
+        {
+          "info": {
+            "name": "Get signed SAGEOX.md update",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/update",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "query",
+                "description": "Optional team ID to get team-specific SAGEOX.md"
+              }
+            ]
+          },
+          "docs": "Returns the signed SAGEOX.md file (team conventions) for the authenticated user.\nThe response includes content and cryptographic signature for verification.\n\n**Signature format:** EdDSA signature using the global SageOx signing key\n**Verification:** Use /api/v1/signing-keys to get public key for verification\n\n**Parameters:**\n- **team_id** (optional): Specific team's SAGEOX.md. If not provided, returns default/merged content.\n\n**Authorization:** User must be member of requested team (if team_id s"
+        },
+        {
+          "info": {
+            "name": "Search user's entities",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/search/entities",
+            "params": [
+              {
+                "name": "q",
+                "value": "my-project",
+                "type": "query",
+                "description": "Search query string"
+              },
+              {
+                "name": "type",
+                "value": "repo",
+                "type": "query",
+                "description": "Optional entity type filter"
+              }
+            ]
+          },
+          "docs": "Full-text search across user's entities (repositories, teams, etc.).\nReturns matching entities with metadata.\n\n**Query parameter:** `q` - search query string (required)\n**Type parameter:** `type` - optional filter by entity type\n\n**Supported entity types:**\n- `repo` - repositories\n- `team` - teams\n- `user` - users (limited visibility)\n\n**Authentication:** Bearer token required\n"
+        },
+        {
+          "info": {
+            "name": "Subscribe to newsletter",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/newsletter",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Subscribes an email address to the product newsletter.\nSyncs to MailerLite if configured.\n\n**Rate limit:** Standard rate limiting\n**Duplicate handling:** Idempotent - returns success for existing subscriptions\n\n**Authentication:** Not required (public endpoint)\n"
+        },
+        {
+          "info": {
+            "name": "Get GitLab personal access token",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/gitlab/pat"
+          },
+          "docs": "Returns the authenticated user's GitLab personal access token.\nUsed by CLI and integrations to authenticate with GitLab API.\n\n**Security:** Token is sensitive - only returned to authenticated user\n**Token type:** GitLab PAT (personal access token)\n**Scopes:** api, read_repository, write_repository\n\n**Authentication:** Bearer token required\n"
+        },
+        {
+          "info": {
+            "name": "Get API documentation UI",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/docs"
+          },
+          "docs": "Returns interactive API documentation (Swagger/OpenAPI UI).\nServes the SwaggerUI interface for exploring the API.\n\n**Authentication:** Not required (public endpoint)\n"
+        },
+        {
+          "info": {
+            "name": "Get OpenAPI specification",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/docs/openapi.json"
+          },
+          "docs": "Returns the complete OpenAPI 3.1.0 specification for the API.\nUsed by code generation tools, API clients, and documentation generators.\n\n**Format:** OpenAPI 3.1.0 (JSON)\n**Caching:** Safe to cache and serve from CDN\n\n**Authentication:** Not required (public endpoint)\n"
+        },
+        {
+          "info": {
+            "name": "Generate identicon avatar",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/avatars/:id",
+            "headers": [
+              {
+                "name": "Accept",
+                "value": "image/svg+xml"
+              }
+            ],
+            "params": [
+              {
+                "name": "id",
+                "value": "usr_01aq5p00aq5p00aq5p",
+                "type": "path",
+                "description": "ID to generate avatar for (user_id, team_id, repo_id, etc.)"
+              }
+            ]
+          },
+          "docs": "Generates a deterministic identicon avatar (visual hash) for a given ID.\nUseful for displaying unique visual identifiers for users, teams, or repos.\n\n**SVG generation:** Seedable random vector art based on ID hash\n**Deterministic:** Same ID always generates same avatar\n**Caching:** Safe to cache indefinitely (content-addressed)\n\n**Format negotiation:**\n- `Accept: image/svg+xml` → SVG (default, lightweight)\n- `Accept: image/png` → PNG (rasterized, if supported)\n\n**Authentication:** Not required ("
+        },
+        {
+          "info": {
+            "name": "Get Prometheus metrics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/metrics"
+          },
+          "docs": "Returns application metrics in Prometheus text format.\nUsed by monitoring systems (Prometheus, Grafana, etc.) for telemetry collection.\n\n**Format:** Prometheus exposition format (text/plain)\n**Endpoint type:** Scrape endpoint (intended for machine consumption)\n**Metrics included:**\n- HTTP request duration and status codes\n- Database connection pool stats\n- Business logic metrics (repos registered, teams created, etc.)\n- Custom application metrics\n\n**Authentication:** Not required (typically scra"
+        },
+        {
+          "info": {
+            "name": "Temporal workflow engine smoke test",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/ready/temporal/smoke"
+          },
+          "docs": "Quick connectivity and health check for Temporal workflow engine.\nReturns status of Temporal connection and basic functionality.\n\n**Purpose:** Verification endpoint for deployment health checks\n**Timeout:** ~5 seconds (fail-fast)\n\n**Authentication:** Not required (health check endpoint)\n"
+        },
+        {
+          "info": {
+            "name": "GitLab integration smoke test",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/ready/gitlab/smoke"
+          },
+          "docs": "Quick connectivity and health check for GitLab integration.\nReturns status of GitLab API endpoint and authentication.\n\n**Purpose:** Verification endpoint for deployment health checks\n**Timeout:** ~5 seconds (fail-fast)\n\n**Authentication:** Not required (health check endpoint)\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

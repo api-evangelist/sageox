@@ -1,0 +1,1998 @@
+{
+  "item": [
+    {
+      "id": "5ca84b20-3e52-47ac-9550-c39472eaf081",
+      "name": "Miscellaneous",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "37087c05-065c-4eaf-aba2-2f2dae683dfe",
+          "name": "Get platform feature flags",
+          "request": {
+            "name": "Get platform feature flags",
+            "description": {
+              "content": "Returns platform-level feature flags that determine which features are enabled/disabled.\nUsed by frontend and clients to conditionally render UI, show settings, or enable features.\n\n**Feature flags:**\n- **photos:** Photo/media features enabled\n- **notifications:** Notification delivery channels configuration\n\nFor user-targeted feature flags via PostHog, use the frontend SDK with user context.\n\n**Authentication:** Not required (public endpoint)\n**Rate limit:** Standard rate limiting applies\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "config",
+                "features"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "fcf87ef5-9eab-406f-94c8-19146614443d",
+              "name": "Feature flags retrieved",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "config",
+                    "features"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"photos\": true,\n  \"notifications\": {\n    \"email\": true,\n    \"push\": true,\n    \"sms\": false\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7a073009-894a-4ddd-b772-84cfad24c0e7",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "config",
+                    "features"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "49dc47d9-775d-4fa8-8fd5-fb5054f9cfa1",
+          "name": "Get signing keys (JWKS format)",
+          "request": {
+            "name": "Get signing keys (JWKS format)",
+            "description": {
+              "content": "Returns the global SageOx signing keys in JWKS (JSON Web Key Set) format per RFC 7517.\nUsed to verify signatures on SAGEOX.md files and other signed artifacts.\n\n**Format:** JWKS-style response with Ed25519 public keys\n**Key type:** OKP (Octet Key Pair) with Ed25519 curve\n**Algorithm:** EdDSA\n\n**Caching:**\n- Fresh for 10 hours (max-age=36000)\n- Serve stale up to 7 days while revalidating in background\n- CDN-safe with public Cache-Control header\n\n**Authentication:** Not required (public endpoint)\n**Rate limit:** 30 requests/minute per IP (prevents key enumeration)\n\n**Note:** In the team-only model, organization-specific signing keys have been removed.\nAll signatures use the global SageOx signing key.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "signing-keys"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "d201ca69-a66c-4491-8d4a-be5a0c681fe3",
+              "name": "Signing keys retrieved (JWKS format)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "signing-keys"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Caching directive for CDN and browsers",
+                  "key": "Cache-Control",
+                  "value": "public, max-age=36000, stale-while-revalidate=604800"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"keys\": [\n    {\n      \"kid\": \"sageox-key-2025-01\",\n      \"kty\": \"OKP\",\n      \"alg\": \"EdDSA\",\n      \"crv\": \"Ed25519\",\n      \"x\": \"abcdefghijklmnopqrstuvwxyz0123456789ABCD\",\n      \"use\": \"sig\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8a64235a-90b1-4e7f-a23f-a87d1014425b",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "signing-keys"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "5257fc5b-4d95-4df7-a44a-ef7ca55a1e4c",
+          "name": "Get signed SAGEOX.md update",
+          "request": {
+            "name": "Get signed SAGEOX.md update",
+            "description": {
+              "content": "Returns the signed SAGEOX.md file (team conventions) for the authenticated user.\nThe response includes content and cryptographic signature for verification.\n\n**Signature format:** EdDSA signature using the global SageOx signing key\n**Verification:** Use /api/v1/signing-keys to get public key for verification\n\n**Parameters:**\n- **team_id** (optional): Specific team's SAGEOX.md. If not provided, returns default/merged content.\n\n**Authorization:** User must be member of requested team (if team_id specified)\n\n**Authentication:** Bearer token required\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "update"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "team_id",
+                  "value": "<string>",
+                  "description": "Optional team ID to get team-specific SAGEOX.md"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "70dd372b-491a-4c8a-89b7-1a8912f57bec",
+              "name": "Signed SAGEOX.md content",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "update"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123xyz"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"content\": \"# SAGEOX.md\\\\n\\\\nTeam conventions and standards...\",\n  \"signature\": {\n    \"value\": \"abcdefgh...\",\n    \"algorithm\": \"EdDSA\",\n    \"public_key_id\": \"sageox-key-2025-01\"\n  },\n  \"team_id\": \"team_abc123xyz\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "392ae2f4-d683-401b-a89c-14adf5e21bc2",
+              "name": "Authentication required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "update"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123xyz"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "abc30e46-39f4-42f7-80df-0a6ddbdb2d1d",
+              "name": "Unauthorized - user not member of requested team",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "update"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123xyz"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "12abb862-ce0a-4b24-88a9-3ccc5a26de99",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "update"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123xyz"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6fb7f77a-0c62-4ff5-b68e-4a075f842766",
+          "name": "Search user's entities",
+          "request": {
+            "name": "Search user's entities",
+            "description": {
+              "content": "Full-text search across user's entities (repositories, teams, etc.).\nReturns matching entities with metadata.\n\n**Query parameter:** `q` - search query string (required)\n**Type parameter:** `type` - optional filter by entity type\n\n**Supported entity types:**\n- `repo` - repositories\n- `team` - teams\n- `user` - users (limited visibility)\n\n**Authentication:** Bearer token required\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "search",
+                "entities"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "q",
+                  "value": "<string>",
+                  "description": "(Required) Search query string"
+                },
+                {
+                  "disabled": false,
+                  "key": "type",
+                  "value": "<string>",
+                  "description": "Optional entity type filter"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "d081ba60-42a9-4999-a89e-288dd78bfa82",
+              "name": "Search results",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "search",
+                    "entities"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "my-project"
+                    },
+                    {
+                      "key": "type",
+                      "value": "repo"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"results\": [\n    {\n      \"type\": \"repo\",\n      \"id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n      \"name\": \"my-project\",\n      \"description\": \"Production repository\",\n      \"score\": 0.95\n    },\n    {\n      \"type\": \"repo\",\n      \"id\": \"repo_01934f5a-8b9c-7def-b012-3456789abcde\",\n      \"name\": \"my-project\",\n      \"description\": \"Production repository\",\n      \"score\": 0.95\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f6c063eb-2f1e-47da-801e-540362f2c185",
+              "name": "Invalid search query",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "search",
+                    "entities"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "my-project"
+                    },
+                    {
+                      "key": "type",
+                      "value": "repo"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6ec5d01d-536a-4e11-896a-4b07cffb9888",
+              "name": "Authentication required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "search",
+                    "entities"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "my-project"
+                    },
+                    {
+                      "key": "type",
+                      "value": "repo"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7a1d368e-7cf6-46f8-a97a-19b19358a5b4",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "search",
+                    "entities"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "q",
+                      "value": "my-project"
+                    },
+                    {
+                      "key": "type",
+                      "value": "repo"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "9b451a8f-d519-42c7-a5cd-9f684daf027e",
+          "name": "Subscribe to newsletter",
+          "request": {
+            "name": "Subscribe to newsletter",
+            "description": {
+              "content": "Subscribes an email address to the product newsletter.\nSyncs to MailerLite if configured.\n\n**Rate limit:** Standard rate limiting\n**Duplicate handling:** Idempotent - returns success for existing subscriptions\n\n**Authentication:** Not required (public endpoint)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "newsletter"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": null,
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"<email>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "b9c07cdd-4165-4f50-a296-f8f663a84085",
+              "name": "Newsletter subscription processed",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "newsletter"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Subscription successful\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "332a1229-1549-4c1f-abc9-76bd7605753b",
+              "name": "Invalid email address",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "newsletter"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "5f892be5-39ff-434d-bfcd-87da229f4359",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "newsletter"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"user@example.com\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c75ecd54-af5f-45f8-b0a1-47d799ba7c38",
+          "name": "Get GitLab personal access token",
+          "request": {
+            "name": "Get GitLab personal access token",
+            "description": {
+              "content": "Returns the authenticated user's GitLab personal access token.\nUsed by CLI and integrations to authenticate with GitLab API.\n\n**Security:** Token is sensitive - only returned to authenticated user\n**Token type:** GitLab PAT (personal access token)\n**Scopes:** api, read_repository, write_repository\n\n**Authentication:** Bearer token required\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "gitlab",
+                "pat"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET"
+          },
+          "response": [
+            {
+              "id": "3d235a44-0dc1-4a15-b7fa-1e43ed17c307",
+              "name": "GitLab PAT retrieved",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "gitlab",
+                    "pat"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"token\": \"glpat-abc123xyz...\",\n  \"expires_at\": \"2026-12-18T10:30:00Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0615378a-4229-4b8c-9ec7-7c4815c4533a",
+              "name": "Authentication required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "gitlab",
+                    "pat"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "18cdaf6c-039c-4a9b-b62c-cda89bc5bdc1",
+              "name": "GitLab token not configured for user",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "gitlab",
+                    "pat"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "06591889-61db-40ce-85b3-9b63eebb9ef0",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "gitlab",
+                    "pat"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8d7ca23e-43bd-437c-893e-1097a0d7143d",
+          "name": "Get API documentation UI",
+          "request": {
+            "name": "Get API documentation UI",
+            "description": {
+              "content": "Returns interactive API documentation (Swagger/OpenAPI UI).\nServes the SwaggerUI interface for exploring the API.\n\n**Authentication:** Not required (public endpoint)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "docs"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/html"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "ee65a391-d3b3-4bde-87d8-e3dd5029f5f0",
+              "name": "API documentation HTML page",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "docs"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "text/html"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/html"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8edd257a-c949-4b2d-9f2f-cba7197a6822",
+          "name": "Get OpenAPI specification",
+          "request": {
+            "name": "Get OpenAPI specification",
+            "description": {
+              "content": "Returns the complete OpenAPI 3.1.0 specification for the API.\nUsed by code generation tools, API clients, and documentation generators.\n\n**Format:** OpenAPI 3.1.0 (JSON)\n**Caching:** Safe to cache and serve from CDN\n\n**Authentication:** Not required (public endpoint)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "docs",
+                "openapi.json"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "55ec6295-ced5-41d9-beeb-e00058345ac3",
+              "name": "OpenAPI specification",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "docs",
+                    "openapi.json"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8d0a755e-be83-4eab-809b-f994d7269b71",
+          "name": "Generate identicon avatar",
+          "request": {
+            "name": "Generate identicon avatar",
+            "description": {
+              "content": "Generates a deterministic identicon avatar (visual hash) for a given ID.\nUseful for displaying unique visual identifiers for users, teams, or repos.\n\n**SVG generation:** Seedable random vector art based on ID hash\n**Deterministic:** Same ID always generates same avatar\n**Caching:** Safe to cache indefinitely (content-addressed)\n\n**Format negotiation:**\n- `Accept: image/svg+xml` → SVG (default, lightweight)\n- `Accept: image/png` → PNG (rasterized, if supported)\n\n**Authentication:** Not required (public endpoint)\n**Rate limit:** Standard rate limiting\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "avatars",
+                ":id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "id",
+                  "description": "(Required) ID to generate avatar for (user_id, team_id, repo_id, etc.)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "image/svg+xml"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "827f2fda-9846-4521-8903-fff34aea42e2",
+              "name": "Generated identicon avatar",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "avatars",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) ID to generate avatar for (user_id, team_id, repo_id, etc.)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "disabled": false,
+                    "description": "Desired image format",
+                    "key": "Accept",
+                    "value": "image/svg+xml"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "image/svg+xml"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "image/svg+xml"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "e5d9c729-ae14-4a3e-a951-304190c829cd",
+              "name": "Invalid ID format",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "avatars",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) ID to generate avatar for (user_id, team_id, repo_id, etc.)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "disabled": false,
+                    "description": "Desired image format",
+                    "key": "Accept",
+                    "value": "image/svg+xml"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d8917f90-0b3e-4e9f-8d5a-d2b5d66193bb",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "avatars",
+                    ":id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "id",
+                      "description": "(Required) ID to generate avatar for (user_id, team_id, repo_id, etc.)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "disabled": false,
+                    "description": "Desired image format",
+                    "key": "Accept",
+                    "value": "image/svg+xml"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e080a4e7-1abf-46a5-af56-d8fc19ade214",
+          "name": "Get Prometheus metrics",
+          "request": {
+            "name": "Get Prometheus metrics",
+            "description": {
+              "content": "Returns application metrics in Prometheus text format.\nUsed by monitoring systems (Prometheus, Grafana, etc.) for telemetry collection.\n\n**Format:** Prometheus exposition format (text/plain)\n**Endpoint type:** Scrape endpoint (intended for machine consumption)\n**Metrics included:**\n- HTTP request duration and status codes\n- Database connection pool stats\n- Business logic metrics (repos registered, teams created, etc.)\n- Custom application metrics\n\n**Authentication:** Not required (typically scraped by internal monitoring)\n**Rate limit:** Standard rate limiting (or exempt in some deployments)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "metrics"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/plain"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "63d290dc-8aae-45e9-aacd-91c1ac8c39a4",
+              "name": "Prometheus metrics in text format",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "metrics"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "text/plain"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "# HELP http_requests_total Total HTTP requests\\n# TYPE http_requests_total counter\\nhttp_requests_total{method=\"GET\",status=\"200\"} 1234\\n",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "95f7d49c-7a84-44b8-a261-82600d234e73",
+              "name": "Server error",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "metrics"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Internal Server Error",
+              "code": 500,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f4a37e27-479f-4916-ae34-c6c268a919c5",
+          "name": "Temporal workflow engine smoke test",
+          "request": {
+            "name": "Temporal workflow engine smoke test",
+            "description": {
+              "content": "Quick connectivity and health check for Temporal workflow engine.\nReturns status of Temporal connection and basic functionality.\n\n**Purpose:** Verification endpoint for deployment health checks\n**Timeout:** ~5 seconds (fail-fast)\n\n**Authentication:** Not required (health check endpoint)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "ready",
+                "temporal",
+                "smoke"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "49de4eaa-8dd0-429f-859d-f8e7194aa706",
+              "name": "Temporal service is healthy",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "ready",
+                    "temporal",
+                    "smoke"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"Temporal server is reachable\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "79eae302-fa20-4c06-847b-7efb2f3b8c20",
+              "name": "Temporal service unavailable",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "ready",
+                    "temporal",
+                    "smoke"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unable to reach Temporal server\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "e869cd78-a8d1-48ed-bb24-55453626e87f",
+          "name": "GitLab integration smoke test",
+          "request": {
+            "name": "GitLab integration smoke test",
+            "description": {
+              "content": "Quick connectivity and health check for GitLab integration.\nReturns status of GitLab API endpoint and authentication.\n\n**Purpose:** Verification endpoint for deployment health checks\n**Timeout:** ~5 seconds (fail-fast)\n\n**Authentication:** Not required (health check endpoint)\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "ready",
+                "gitlab",
+                "smoke"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": null
+          },
+          "response": [
+            {
+              "id": "454b8907-61a1-4e67-a761-e09e2e0cdb00",
+              "name": "GitLab service is healthy",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "ready",
+                    "gitlab",
+                    "smoke"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"ok\",\n  \"message\": \"GitLab server is reachable\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "52732002-e249-4bff-98e3-edabdd1b4378",
+              "name": "GitLab service unavailable",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "ready",
+                    "gitlab",
+                    "smoke"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Service Unavailable",
+              "code": 503,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Unable to reach GitLab server\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:3000",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "b97ccfe0-50ac-4e99-b397-4975f1004c25",
+    "name": "SageOx Admin Miscellaneous API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n\n\nContact Support:\n Name: SageOx Team",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,918 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Recordings API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Recordings",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List recordings (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter by recording status"
+              },
+              {
+                "name": "mime_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by MIME type prefix (e.g., 'audio/', 'video/')"
+              },
+              {
+                "name": "timestamp_start",
+                "value": "",
+                "type": "query",
+                "description": "Filter recordings created after this timestamp (RFC3339)"
+              },
+              {
+                "name": "timestamp_end",
+                "value": "",
+                "type": "query",
+                "description": "Filter recordings created before this timestamp (RFC3339)"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of recordings to return"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of recordings to skip for pagination"
+              }
+            ]
+          },
+          "docs": "Retrieve paginated list of recordings for a repository with optional filtering\nby status, media type, and timestamp range.\n"
+        },
+        {
+          "info": {
+            "name": "Start recording (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier (repo_<uuidv7>)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Initialize a new chunked recording for a repository. Returns presigned URL\nfor uploading the first chunk.\n\n**Workflow:**\n1. POST to start recording → get recording_id and upload URL\n2. Upload audio chunks to presigned URL\n3. POST /chunks/prefetch to batch-fetch future chunk URLs\n4. POST /chunks/heartbeat after each chunk upload (optional)\n5. POST /complete to finalize and trigger processing\n\n**Status flow:** pending → uploading → processing → ready\n"
+        },
+        {
+          "info": {
+            "name": "Get recording details (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Retrieve full recording details including metadata, status, processing steps,\nand URLs. Processing steps show the pipeline state (upload, transcribe, summarize, commit).\n"
+        },
+        {
+          "info": {
+            "name": "Update recording metadata (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update recording title and/or metadata. Only specified fields are updated.\n"
+        },
+        {
+          "info": {
+            "name": "Delete recording (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Soft-delete a recording. The recording is marked as deleted but retained for auditing.\n"
+        },
+        {
+          "info": {
+            "name": "Get presigned URL for chunk upload (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/chunks",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Get a presigned URL for uploading a specific chunk. Use this to upload\nindividual chunks sequentially, or use /chunks/prefetch for batch URLs.\n"
+        },
+        {
+          "info": {
+            "name": "Batch prefetch chunk upload URLs (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/chunks/prefetch",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Generate multiple presigned URLs at once for continued recording during API downtime\n(deployments, hot-reload). Each URL expires after 6 hours.\n\n**Why this matters:**\n- During API restarts, the client has pre-fetched URLs and can continue recording\n- Recording doesn't stall waiting for new presigned URLs\n- Workflow automatically heartbeats on prefetch to keep session alive\n"
+        },
+        {
+          "info": {
+            "name": "Send chunk upload heartbeat (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/chunks/heartbeat",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Lightweight signal that a chunk was successfully uploaded to S3.\nKeeps the session workflow aware of recording activity without generating\na new presigned URL. Fire-and-forget (no response body expected).\n"
+        },
+        {
+          "info": {
+            "name": "Pause recording (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/pause",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Signal to the session workflow that recording was paused. Resets the\ninactivity timer so the workflow doesn't auto-complete during pause.\n"
+        },
+        {
+          "info": {
+            "name": "Resume recording (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/resume",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Signal to the session workflow that recording was resumed after being paused.\n"
+        },
+        {
+          "info": {
+            "name": "Complete recording upload (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/complete",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Finalize the recording after all chunks are uploaded. Updates recording\nstatus to \"processing\" and starts the Temporal workflow for transcription,\nsummarization, and commit to ledger.\n\n**Status transition:** pending/uploading → processing → ready\n"
+        },
+        {
+          "info": {
+            "name": "Force-complete stuck recording (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/force-complete",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Escape hatch for recordings stuck in pending/uploading state when the normal\ncomplete flow fails (network issues, API restart).\n\n**What this does:**\n1. Validates recording is in stuck state (pending or uploading)\n2. Updates status to processing\n3. Sends force_complete signal to session workflow\n4. Starts processing workflow directly as fallback\n\nUse this sparingly - only when normal completion fails.\n"
+        },
+        {
+          "info": {
+            "name": "Get transcript (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/transcript",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Retrieve VTT (WebVTT) formatted transcript from the git ledger.\nReturns the raw VTT content with proper Content-Type header.\n\n**VTT format example:**\n```\nWEBVTT\n\n00:00:00.000 --> 00:00:05.123\nSpeaker A: This is the opening statement.\n\n00:00:05.123 --> 00:00:12.456\nSpeaker B: And this is the response.\n```\n"
+        },
+        {
+          "info": {
+            "name": "Get extracted decisions (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/decisions",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Retrieve decisions extracted from the recording by the AI analysis workflow.\nIncludes decision makers, behavioral patterns, and agreement status.\n\n**Decisions contain:**\n- Category, significance, status, title, description\n- Per-person agreement tracking\n- Supporting transcript evidence\n- Decision maker influence analysis\n- Behavioral pattern detection\n"
+        },
+        {
+          "info": {
+            "name": "Get download URL (repo-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/recordings/:rec_id/download",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a presigned URL for downloading the final processed audio file.\nOnly available for recordings in \"ready\" state.\n\n**URL expires:** 1 hour after generation\n"
+        },
+        {
+          "info": {
+            "name": "List recordings (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "mime_type",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timestamp_start",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "timestamp_end",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "List recordings (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Start recording (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Start recording (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Get recording details (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get recording details (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Update recording metadata (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Update recording metadata (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Delete recording (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete recording (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Get presigned URL for chunk upload (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/chunks",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Get presigned URL for chunk upload (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Batch prefetch chunk URLs (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/chunks/prefetch",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Batch prefetch chunk URLs (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Send heartbeat (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/chunks/heartbeat",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Send heartbeat (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Pause recording (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/pause",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Pause recording (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Resume recording (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/resume",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Resume recording (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Complete recording upload (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/complete",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Complete recording upload (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Force-complete stuck recording (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/force-complete",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Force-complete stuck recording (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Get transcript (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/transcript",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get transcript (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Get extracted decisions (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/decisions",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get extracted decisions (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "Get download URL (team-scoped)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/recordings/:rec_id/download",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path"
+              },
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get download URL (team-scoped)"
+        },
+        {
+          "info": {
+            "name": "List recording reactions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/recordings/:rec_id/reactions",
+            "params": [
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Every reaction (live-meeting emoji) recorded against this recording, in\nchronological (oldest-first) order. Unbounded by design — recording\nreactions are retained indefinitely as transcript-timeline metadata.\nThe UI is responsible for bucketing or windowing on render.\n"
+        },
+        {
+          "info": {
+            "name": "List recording (live-meeting) chat comments",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/recordings/:rec_id/comments",
+            "params": [
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "All chat-message comments tied to the meeting (recording) entity, in\nchronological order. Wraps the generic comments table with the meeting-\nscoped filter (entity_type='meeting', scope_type='meeting',\nscope_id='global') used by the live cast surface.\n"
+        },
+        {
+          "info": {
+            "name": "List participant-marked decisions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/recordings/:rec_id/decisions",
+            "params": [
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "All participant-marked decisions for this recording (chronological).\nDistinct from /api/v1/teams/{team_id}/recordings/{rec_id}/decisions,\nwhich serves AI-extracted decisions from recordings.metadata. AI rows\nwill migrate to this table in a future ADR.\n"
+        },
+        {
+          "info": {
+            "name": "List participant-marked questions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/recordings/:rec_id/questions",
+            "params": [
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "All participant-marked questions for this recording (chronological)."
+        },
+        {
+          "info": {
+            "name": "List participant-marked action items",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/recordings/:rec_id/action-items",
+            "params": [
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "All participant-marked action items for this recording (chronological).\nEach item carries a required assignee (assigneeUserId).\n"
+        },
+        {
+          "info": {
+            "name": "List participant-marked concerns",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/recordings/:rec_id/concerns",
+            "params": [
+              {
+                "name": "rec_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "All participant-marked concerns for this recording (chronological)."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

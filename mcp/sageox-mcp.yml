@@ -8,10 +8,9 @@ server:
   url: https://sageox.ai/api/v1/mcp
   auth:
     type: oauth2
-    description: >-
-      Connecting an AI tool performs a scoped OAuth grant mapped to the user's
-      SageOx account; the server only exposes resources the authenticated user
-      can access. Grants are managed/revocable at /settings/security.
+    description: Connecting an AI tool performs a scoped OAuth grant mapped to the user's SageOx account;
+      the server only exposes resources the authenticated user can access. Grants are managed/revocable
+      at /settings/security.
     authorization_server: https://sageox.ai/.well-known/oauth-authorization-server
   connect_wizard: https://sageox.ai/connect/mcp
   clients:
@@ -30,7 +29,13 @@ tools:
   description: Save a conversation as a session into a specific Knowledge Bubble.
 - name: access_bubble_content
   description: Read Knowledge Bubble content the user is permitted to see.
-notes: >-
-  Tool names are descriptive labels derived from the documented capabilities at
-  /docs/mcp; the exact wire tool identifiers are enumerated by the live server
-  after OAuth. The MCP endpoint is also advertised in /.well-known/api-catalog.
+notes: Tool names are descriptive labels derived from the documented capabilities at /docs/mcp; the exact
+  wire tool identifiers are enumerated by the live server after OAuth. The MCP endpoint is also advertised
+  in /.well-known/api-catalog.
+deployment:
+  mode: remote
+  endpoint: https://sageox.ai/api/v1/mcp
+  verified: probed
+  probe: gated
+  checked: '2026-08-12'
+  source: catalog MCP census

@@ -1,0 +1,558 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Git API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Git",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get repository file tree",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/tree",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "query",
+                "description": "Subdirectory path (default empty/root)"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              },
+              {
+                "name": "recursive",
+                "value": "",
+                "type": "query",
+                "description": "Return recursive tree (all nested entries)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the file and directory tree for a repository at the specified path and reference.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Caching:** Responses are cached for 30 seconds to reduce GitLab API load.\n"
+        },
+        {
+          "info": {
+            "name": "Get file content or blame information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/files/:path",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "path",
+                "description": "File path (supports nested paths). Append `/blame` to get blame information.\nExample: `src/main.py/blame`\n"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns file content with metadata or blame information if the path ends with `/blame`.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Caching:** File content responses are cached for 30 seconds.\n\n**Blame Annotation:** Append `/blame` to the file path to retrieve line-by-line author and commit information.\n"
+        },
+        {
+          "info": {
+            "name": "Get file blame information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/files/:path/blame",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "path",
+                "description": "File path"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns blame information (line-by-line author and commit history) for a file.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "List repository commits",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/commits",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "query",
+                "description": "Filter commits by path"
+              },
+              {
+                "name": "page",
+                "value": "",
+                "type": "query",
+                "description": "Page number (default 1)"
+              },
+              {
+                "name": "per_page",
+                "value": "",
+                "type": "query",
+                "description": "Items per page (default 20, max 100)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a paginated list of commits for the repository, optionally filtered by path.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Pagination:** Uses page-based pagination with configurable page size (max 100).\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Get commit details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/commits/:sha",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              },
+              {
+                "name": "sha",
+                "value": "",
+                "type": "path",
+                "description": "Commit SHA"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns detailed information for a specific commit including diffs and statistics.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Compare two references",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/compare",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Base reference (branch, tag, or SHA)"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Compare-to reference (branch, tag, or SHA)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the diff between two references (branches, tags, or commits).\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Check repository Ledger status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/ledger-status",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the status of the Ledger repository for a given repository.\n\n**Authentication:** Required (bearer token)\n\n**Status Values:**\n- `ready` - Ledger exists and is ready to use\n- `pending` - Ledger creation is in progress\n- `unavailable` - GitLab integration is not configured\n\n**Anti-Entropy:** This endpoint triggers async Ledger creation if missing.\n"
+        },
+        {
+          "info": {
+            "name": "Create repository Ledger",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/create-ledger",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Manually triggers creation of a Ledger repository for a given repository.\n\n**Authentication:** Required (bearer token)\n\n**Response Codes:**\n- `201 Created` - Ledger was created successfully\n- `200 OK` - Ledger already exists\n- `503 Service Unavailable` - GitLab not configured or creation failed\n\n**Idempotent:** If Ledger already exists, returns existing repo information.\n"
+        },
+        {
+          "info": {
+            "name": "Get team norms repository file tree",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/norms-repo/tree",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "query",
+                "description": "Subdirectory path (default empty/root)"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              },
+              {
+                "name": "recursive",
+                "value": "",
+                "type": "query",
+                "description": "Return recursive tree"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the file and directory tree for a team's norms repository.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Get team norms file content or blame",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/norms-repo/files/:path",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "path",
+                "description": "File path. Append `/blame` for blame information.\nExample: `CODING_STANDARDS.md/blame`\n"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns file content or blame information from a team's norms repository.\nAppend `/blame` to get blame information.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Create or update team norms file",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/norms-repo/files/:path",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "path",
+                "description": "File path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates or updates a file in a team's norms repository with a commit message.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Branch:** Defaults to `main` if not specified.\n\n**Commit Attribution:** Author name and email from user's profile.\n"
+        },
+        {
+          "info": {
+            "name": "List team norms repository commits",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/norms-repo/commits",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              },
+              {
+                "name": "ref",
+                "value": "",
+                "type": "query",
+                "description": "Branch, tag, or commit SHA (default HEAD)"
+              },
+              {
+                "name": "path",
+                "value": "",
+                "type": "query",
+                "description": "Filter commits by path"
+              },
+              {
+                "name": "page",
+                "value": "",
+                "type": "query",
+                "description": "Page number (default 1)"
+              },
+              {
+                "name": "per_page",
+                "value": "",
+                "type": "query",
+                "description": "Items per page (default 20, max 100)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns a paginated list of commits for a team's norms repository.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Get team norms commit details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/norms-repo/commits/:sha",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              },
+              {
+                "name": "sha",
+                "value": "",
+                "type": "path",
+                "description": "Commit SHA"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns detailed information for a specific commit in a team's norms repository.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Compare team norms repository references",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/norms-repo/compare",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              },
+              {
+                "name": "from",
+                "value": "",
+                "type": "query",
+                "description": "Base reference"
+              },
+              {
+                "name": "to",
+                "value": "",
+                "type": "query",
+                "description": "Compare-to reference"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the diff between two references in a team's norms repository.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Caching:** Responses are cached for 30 seconds.\n"
+        },
+        {
+          "info": {
+            "name": "Check team context repository status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/context-repo-status",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the status of the team's context (norms) repository.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team.\n\n**Status Values:**\n- `ready` - Context repo exists and is ready to use\n- `pending` - Context repo not yet created (auto-created during ox init)\n- `unavailable` - GitLab integration not configured\n"
+        },
+        {
+          "info": {
+            "name": "Get git checkout information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/git/info",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns non-sensitive git checkout information for debugging purposes.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of a team associated with the repository.\n\n**Security:** Intentionally excludes tokens and passwords.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,176 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Public API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Public",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get public repository information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/repos/:repo_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID to retrieve"
+              }
+            ]
+          },
+          "docs": "Retrieves basic public information about a repository.\nDoes not include sensitive team information or access control details.\n\n**Authentication:** Not required (public endpoint)\n**Rate limit:** Tiered per IP (60 req/min unauthenticated, 300 req/min authenticated)\n"
+        },
+        {
+          "info": {
+            "name": "Get repositories that could be merged",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/repos/:repo_id/merge-candidates",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID to find merge candidates for"
+              }
+            ]
+          },
+          "docs": "Returns a list of repositories with matching remote hashes that could be merged\ninto this repository. Respects `is_public` flag for fork protection.\n\n**Use case:** Help users identify duplicate registrations that should be consolidated.\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        },
+        {
+          "info": {
+            "name": "Check if merge candidates exist",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/repos/:repo_id/has-merge-candidates",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID to check"
+              }
+            ]
+          },
+          "docs": "Lightweight check to determine if this repository has merge candidates.\nReturns a boolean without fetching full candidate details.\n\n**Use case:** Show UI indication of potential merges without expensive list fetch.\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        },
+        {
+          "info": {
+            "name": "Run repository diagnostics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/repos/:repo_id/doctor",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID to diagnose"
+              }
+            ]
+          },
+          "docs": "Runs diagnostic checks on a repository including health status,\nconfiguration validation, and merge analysis.\n\n**Diagnostics included:**\n- Repository status and metadata\n- Team associations\n- Merge candidate analysis\n- Git configuration validation\n- Feature availability\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        },
+        {
+          "info": {
+            "name": "Get public team information",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/teams/:team_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID to retrieve"
+              }
+            ]
+          },
+          "docs": "Retrieves basic public information about a team.\nDoes not include sensitive member or access control information.\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        },
+        {
+          "info": {
+            "name": "Get team's repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/teams/:team_id/repos",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID to list repositories for"
+              }
+            ]
+          },
+          "docs": "Lists all repositories associated with a team (public view).\nDoes not include private or access-controlled repository details.\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        },
+        {
+          "info": {
+            "name": "Get team's merge candidates",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/teams/:team_id/merge-candidates",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID to analyze for merge candidates"
+              }
+            ]
+          },
+          "docs": "Returns repositories from this team that have merge candidates\n(duplicate registrations that could be consolidated).\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        },
+        {
+          "info": {
+            "name": "Get team public info for join page",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/public/teams/:team_id/info",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID to retrieve info for"
+              }
+            ]
+          },
+          "docs": "Returns information needed for team join/signup page.\nIncludes team name, member count, and visibility status.\n\n**Use case:** Public join page showing team details without authentication.\n\n**Authentication:** Not required\n**Rate limit:** Tiered per IP\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,716 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Teams API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Teams",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List user's teams",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of teams to return"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of teams to skip"
+              }
+            ]
+          },
+          "docs": "Returns all teams the authenticated user is a member of, with pagination."
+        },
+        {
+          "info": {
+            "name": "Create a new team",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new team and adds the authenticated user as the team owner."
+        },
+        {
+          "info": {
+            "name": "Get team details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path",
+                "description": "Team identifier"
+              }
+            ]
+          },
+          "docs": "Returns detailed information about a team. User must be a team member."
+        },
+        {
+          "info": {
+            "name": "Update team details",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/teams/:team_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates team name, policies, or conventions. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Delete a team",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Soft-deletes a team. Requires owner role. Team can be recovered during grace period."
+        },
+        {
+          "info": {
+            "name": "Check if team slug is available",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/check-slug",
+            "params": [
+              {
+                "name": "slug",
+                "value": "product-team",
+                "type": "query",
+                "description": "Slug to check"
+              }
+            ]
+          },
+          "docs": "Validates slug format and returns availability status."
+        },
+        {
+          "info": {
+            "name": "Team adoption (deprecated)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/adopt",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "This endpoint is deprecated. Teams are now standalone entities and cannot be adopted into organizations."
+        },
+        {
+          "info": {
+            "name": "Claim team ownership with code",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/claim",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Claims ownership of an orphan team using a claim code generated during initialization."
+        },
+        {
+          "info": {
+            "name": "Get team's parent",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/parent",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the parent team if one is set, or null if team is a root team."
+        },
+        {
+          "info": {
+            "name": "Set or unset team parent",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/parent",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Sets a parent team to create hierarchy, or unsets the parent to make it a root team. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Get team's child teams",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/children",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns all direct child teams in the hierarchy."
+        },
+        {
+          "info": {
+            "name": "Get team's ancestor chain",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/ancestors",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the complete ancestor chain up to the root team."
+        },
+        {
+          "info": {
+            "name": "List team members",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/members",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns all active team members with their roles and metadata."
+        },
+        {
+          "info": {
+            "name": "Update team member role",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/members/:user_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              },
+              {
+                "name": "user_id",
+                "value": "user_def456",
+                "type": "path",
+                "description": "User ID to update"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Changes a member's role within the team. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Remove team member",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/members/:user_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              },
+              {
+                "name": "user_id",
+                "value": "user_def456",
+                "type": "path",
+                "description": "User ID to remove"
+              }
+            ]
+          },
+          "docs": "Removes a member from the team. Requires owner role. Cannot remove the last owner."
+        },
+        {
+          "info": {
+            "name": "Leave team",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/members/me",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Allows the authenticated user to remove themselves from a team. Cannot leave if you are the last owner."
+        },
+        {
+          "info": {
+            "name": "Bulk update member roles",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/members/bulk",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates roles for multiple members in a single request. Requires owner role. Partial errors are returned with successful updates."
+        },
+        {
+          "info": {
+            "name": "Bulk remove members",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/members/bulk",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Removes multiple members from a team in a single request. Requires owner role. Cannot remove all owners."
+        },
+        {
+          "info": {
+            "name": "List pending team invites",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/invites",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns all active (non-expired, non-accepted) invites for the team. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Create team invite",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/invites",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Invites a user to join a team by email. Requires owner role. An active invite must not already exist for this email."
+        },
+        {
+          "info": {
+            "name": "Revoke team invite",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/invites/:invite_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              },
+              {
+                "name": "invite_id",
+                "value": "inv_abc123",
+                "type": "path",
+                "description": "Invite ID to revoke"
+              }
+            ]
+          },
+          "docs": "Revokes a pending invite, preventing the recipient from accepting it. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Get team invite details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/invites/team/:token",
+            "params": [
+              {
+                "name": "token",
+                "value": "token_abc123xyz",
+                "type": "path",
+                "description": "Invite token"
+              }
+            ]
+          },
+          "docs": "Retrieves invite details using a token (no authentication required). Used to preview invites before accepting."
+        },
+        {
+          "info": {
+            "name": "Get team invite code",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/invite-code",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns the current invite code for the team (generates one if none exists). Requires owner or admin role. Use code with join endpoint to add members."
+        },
+        {
+          "info": {
+            "name": "Regenerate team invite code",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/invite-code",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Generates a new invite code, invalidating the previous one. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Join team with invite code",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/join",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Joins an authenticated user to a team using an invite code. Automatically grants member role."
+        },
+        {
+          "info": {
+            "name": "Get team deletion status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/delete",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Checks the current status of a team deletion request."
+        },
+        {
+          "info": {
+            "name": "Initiate team deletion",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/delete",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Starts the team deletion process with a grace period. Requires owner role. Returns a workflow ID for tracking."
+        },
+        {
+          "info": {
+            "name": "Confirm team deletion",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/delete/confirm",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Confirms deletion of a team. Must type the team ID exactly to prevent accidental deletion. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Cancel team deletion",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/delete/cancel",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Cancels a pending team deletion request. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Get team conventions",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/conventions",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns published and draft conventions for the team. Any team member can view."
+        },
+        {
+          "info": {
+            "name": "Save draft conventions",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/conventions/draft",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Saves draft conventions without publishing. Requires owner role. Drafts can be discarded or published."
+        },
+        {
+          "info": {
+            "name": "Discard draft conventions",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/conventions/draft",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Discards any unsaved draft conventions. Requires owner role."
+        },
+        {
+          "info": {
+            "name": "Publish conventions",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/conventions/publish",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Publishes the current draft as the active conventions. Requires owner role. Draft is cleared after publishing."
+        },
+        {
+          "info": {
+            "name": "Get team diagram",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/diagram",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns aggregated resource counts by category for visualization. Member-accessible."
+        },
+        {
+          "info": {
+            "name": "Get team entities",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/entities",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "team_abc123xyz",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Returns flattened list of all entities (resources) in the team for table display. Member-accessible."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

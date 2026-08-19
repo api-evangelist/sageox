@@ -1,0 +1,220 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Repositories API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Repositories",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get uninstall request status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/uninstall",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the current status of an uninstall request.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team associated with the repository.\n\n**Status Values:**\n- `pending` - Awaiting confirmation (includes confirmation_required field)\n- `confirmed` - Confirmed, cleanup in progress\n- `canceled` - Request was canceled\n- `expired` - Confirmation window expired\n- `completed` - Uninstall completed\n"
+        },
+        {
+          "info": {
+            "name": "Initiate repository uninstall",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/uninstall",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Initiates an uninstall request for a repository, removing cloud resources while preserving data.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a team admin or owner.\n\n**Workflow:** Triggers a Temporal workflow that handles confirmation and cleanup.\n\n**Status:** Returns 202 Accepted - the workflow handles the rest asynchronously.\n\n**Confirmation:** User must confirm uninstall via POST /api/v1/repos/{repo_id}/uninstall/confirm\n"
+        },
+        {
+          "info": {
+            "name": "Confirm uninstall request",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/uninstall/confirm",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Confirms an uninstall request. User must type the repo ID to confirm.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a team admin or owner.\n\n**Confirmation:** The confirmation_text field must exactly match the repo_id.\n\n**Workflow:** Signals the Temporal workflow to proceed with uninstall.\n\n**Response:** Returns 202 Accepted - the workflow handles cleanup asynchronously.\n"
+        },
+        {
+          "info": {
+            "name": "Cancel uninstall request",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/uninstall/cancel",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Cancels a pending uninstall request.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a team admin or owner.\n\n**Workflow:** Signals the Temporal workflow to cancel the uninstall.\n\n**Response:** Returns 202 Accepted - the workflow handles state update asynchronously.\n"
+        },
+        {
+          "info": {
+            "name": "Get deletion request status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/delete",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the current status of a deletion request.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a member of the team associated with the repository.\n\n**Status Values:**\n- `pending` - Awaiting confirmation\n- `confirmed` - Confirmed, deletion in progress\n- `canceled` - Request was canceled\n- `expired` - Confirmation window expired\n- `completed` - Deletion completed\n"
+        },
+        {
+          "info": {
+            "name": "Initiate repository deletion",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/delete",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Initiates a deletion request for a repository, permanently removing all data.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a team admin or owner.\n\n**Workflow:** Triggers a Temporal workflow that handles confirmation and cleanup.\n\n**Status:** Returns 202 Accepted - the workflow handles the rest asynchronously.\n\n**Confirmation:** User must confirm deletion via POST /api/v1/repos/{repo_id}/delete/confirm\n\n**Warning:** This operation is irreversible.\n"
+        },
+        {
+          "info": {
+            "name": "Confirm deletion request",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/delete/confirm",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Confirms a deletion request. Permanently deletes the repository and all associated data.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a team admin or owner.\n\n**Workflow:** Signals the Temporal workflow to proceed with deletion.\n\n**Response:** Returns 202 Accepted - the workflow handles cleanup asynchronously.\n\n**Warning:** This operation is irreversible.\n"
+        },
+        {
+          "info": {
+            "name": "Cancel deletion request",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/delete/cancel",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Cancels a pending deletion request.\n\n**Authentication:** Required (bearer token)\n\n**Access Control:** User must be a team admin or owner.\n\n**Workflow:** Signals the Temporal workflow to cancel the deletion.\n\n**Response:** Returns 202 Accepted - the workflow handles state update asynchronously.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

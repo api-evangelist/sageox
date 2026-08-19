@@ -1,0 +1,2356 @@
+{
+  "item": [
+    {
+      "id": "645371e7-8b4c-4ddf-a10b-2d84c2d719a0",
+      "name": "runs",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "d526aa58-d800-4605-b742-ebf2daffdbcb",
+          "name": "Prepare a new terraform run",
+          "request": {
+            "name": "Prepare a new terraform run",
+            "description": {
+              "content": "Initialize a run before streaming terraform apply events.\n\nThis endpoint creates a pending run that is ready to receive JSONL events from a terraform apply.\nOnce created, the CLI streams terraform output to `/api/v1/runs/{run_id}/events` and calls\n`/api/v1/runs/{run_id}/complete` when terraform finishes.\n\n**Required sequence:**\n1. Call `/runs/prepare` to create run\n2. Stream events via `/runs/{run_id}/events`\n3. Call `/runs/{run_id}/complete` with exit code\n\nSee [ADR-012](https://github.com/sageox/sageox/blob/main/docs/adr/012-run-event-processing.md) for architecture details.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "runs",
+                "prepare"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workspace_id\": \"<string>\",\n  \"git_commit\": \"<string>\",\n  \"terraform_version\": \"<string>\",\n  \"plan_path\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "bd0ec26c-b17a-4875-bacd-4992de8de5c5",
+              "name": "Run created successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    "prepare"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace_id\": \"ws_abc123def456\",\n  \"git_commit\": \"abc123deadbeef1234567890abcdef123456789\",\n  \"terraform_version\": \"1.9.5\",\n  \"plan_path\": \"workspaces/acme-corp/prod/plan.json\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"run_id\": \"018c5e72-1b3a-7def-8abc-123456789012\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "9538d885-1dde-4d14-b6e2-c8283c36ec94",
+              "name": "Invalid request (missing required fields, invalid workspace_id format)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    "prepare"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace_id\": \"ws_abc123def456\",\n  \"git_commit\": \"abc123deadbeef1234567890abcdef123456789\",\n  \"terraform_version\": \"1.9.5\",\n  \"plan_path\": \"workspaces/acme-corp/prod/plan.json\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Missing required field: workspace_id\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8d9808f1-7a27-4c95-b7d6-579d86586b4b",
+              "name": "Unauthorized (invalid or missing authentication token)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    "prepare"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace_id\": \"ws_abc123def456\",\n  \"git_commit\": \"abc123deadbeef1234567890abcdef123456789\",\n  \"terraform_version\": \"1.9.5\",\n  \"plan_path\": \"workspaces/acme-corp/prod/plan.json\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "3de5668c-4635-495b-bdf7-07fe77c308e5",
+              "name": "Workspace not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    "prepare"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace_id\": \"ws_abc123def456\",\n  \"git_commit\": \"abc123deadbeef1234567890abcdef123456789\",\n  \"terraform_version\": \"1.9.5\",\n  \"plan_path\": \"workspaces/acme-corp/prod/plan.json\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "29a4c229-eb46-4d19-adab-c6d00231591e",
+              "name": "Run already in progress for this workspace (conflict)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    "prepare"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"workspace_id\": \"ws_abc123def456\",\n  \"git_commit\": \"abc123deadbeef1234567890abcdef123456789\",\n  \"terraform_version\": \"1.9.5\",\n  \"plan_path\": \"workspaces/acme-corp/prod/plan.json\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "162707e4-9253-4993-8ae2-7da7cb08766c",
+          "name": "Stream terraform apply events",
+          "request": {
+            "name": "Stream terraform apply events",
+            "description": {
+              "content": "Stream terraform apply JSONL events. Connection stays open until terraform completes or disconnects.\n\n**Event Format:**\nSend terraform output as newline-delimited JSON (NDJSON). Each line is a single Terraform event.\n\nExample events:\n```\n{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n{\"@level\":\"info\",\"type\":\"apply_complete\",\"changes\":{\"add\":3,\"change\":0,\"remove\":0}}\n```\n\n**Connection Lifecycle:**\n- Backend validates run exists and is in `pending` or `running` status\n- First connection signals Temporal workflow `run_started`\n- Each event line updates `last_event_at` timestamp\n- Important events (progress, complete) update DB directly\n- Connection drop without calling `/complete` signals `connection_lost` to workflow\n- Reconnection within 2 minutes cancels the connection_lost timeout\n\n**Storage:**\n- Backend does NOT store raw events (would be high write volume)\n- CLI must locally write events to `apply.jsonl` file\n- CLI commits `apply.jsonl` to git after terraform exits\n- Backend queries important events from database, not stored JSONL\n\nSee [ADR-012](https://github.com/sageox/sageox/blob/main/docs/adr/012-run-event-processing.md) for full event specifications.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "runs",
+                ":run_id",
+                "events"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "run_id",
+                  "description": "(Required) UUIDv7 run identifier from `/runs/prepare`"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-ndjson"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "<string>"
+            }
+          },
+          "response": [
+            {
+              "id": "cce11d1d-8d98-48cb-9b6b-5b78ae5d7306",
+              "name": "Accepted - connection established and will remain open.\nBackend processes events as they arrive. Connection closes when:\n- Terraform process exits and CLI calls `/complete`\n- Network connection drops (triggers grace timer)\n- 30-minute inactivity timeout (no events received)\n- 4-hour absolute TTL exceeded\n",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "events"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier from `/runs/prepare`"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n"
+                }
+              },
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "32395ff7-7c34-4d63-8263-51aa922b2bb2",
+              "name": "Invalid JSONL format or malformed JSON in stream",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "events"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier from `/runs/prepare`"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n"
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0f780944-f6c0-493b-80ea-7a351450c5fa",
+              "name": "Unauthorized (invalid or missing authentication token)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "events"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier from `/runs/prepare`"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n"
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "13552836-3536-437c-b2d0-ace242474cd9",
+              "name": "Run not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "events"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier from `/runs/prepare`"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n"
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "781783ce-f3b4-4c13-958c-7e7bddcb6a90",
+              "name": "Run already completed or failed (cannot accept new events)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "events"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier from `/runs/prepare`"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n"
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "284f4891-091d-4a15-be18-c8a701353eed",
+          "name": "Complete a terraform run",
+          "request": {
+            "name": "Complete a terraform run",
+            "description": {
+              "content": "Signal terraform apply has finished (success or failure).\n\n**CLI Sequence (before calling this endpoint):**\n1. Terraform apply exits (with exit code 0 or non-zero)\n2. CLI writes all events to local `apply.jsonl` file (via streaming from terraform)\n3. CLI commits `apply.jsonl` to git repository\n4. CLI pushes commit to remote\n5. CLI calls this endpoint with exit code and commit SHA\n\n**Important:** CLI MUST commit and push `apply.jsonl` even on failure.\nFailed runs need logs for debugging and analysis.\n\n**Backend Behavior:**\n- Stores `apply_commit` in run metadata for audit trail\n- Sets `apply_path` to `workspaces/{team}/{workspace}/apply.jsonl`\n- If exit_code=0: Sets status=`succeeded`, signals Temporal `run_completed`\n- If exit_code!=0: Sets status=`failed`, stores error message, signals Temporal `run_failed`\n\nSee [ADR-012](https://github.com/sageox/sageox/blob/main/docs/adr/012-run-event-processing.md) for workflow details.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "runs",
+                ":run_id",
+                "complete"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "run_id",
+                  "description": "(Required) UUIDv7 run identifier"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"exit_code\": \"<integer>\",\n  \"apply_commit\": \"<string>\",\n  \"error_message\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "df609a3a-4af7-489e-b60a-78e94b5d2a18",
+              "name": "Run completed successfully (no content in response)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "complete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"exit_code\": 0,\n  \"apply_commit\": \"abc123def456789abc123def456789abc123def4\",\n  \"error_message\": \"Error: creating S3 bucket: AccessDenied\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "a29a50e0-6f76-4263-9940-b0a541c297c3",
+              "name": "Invalid request (missing exit_code or apply_commit)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "complete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"exit_code\": 0,\n  \"apply_commit\": \"abc123def456789abc123def456789abc123def4\",\n  \"error_message\": \"Error: creating S3 bucket: AccessDenied\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": \"Missing required field: exit_code\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6fcb938d-f06b-4666-ac14-80f984d1feb5",
+              "name": "Unauthorized (invalid or missing authentication token)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "complete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"exit_code\": 0,\n  \"apply_commit\": \"abc123def456789abc123def456789abc123def4\",\n  \"error_message\": \"Error: creating S3 bucket: AccessDenied\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7563be5f-6573-48c7-a4a6-32417e42a066",
+              "name": "Run not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "complete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"exit_code\": 0,\n  \"apply_commit\": \"abc123def456789abc123def456789abc123def4\",\n  \"error_message\": \"Error: creating S3 bucket: AccessDenied\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f4997fdd-5e62-4a76-9cb4-3491652c984c",
+              "name": "Run already completed (conflict - cannot complete twice)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id",
+                    "complete"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"exit_code\": 0,\n  \"apply_commit\": \"abc123def456789abc123def456789abc123def4\",\n  \"error_message\": \"Error: creating S3 bucket: AccessDenied\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2f02175b-5acf-46be-a438-e0e8751f4ca6",
+          "name": "Get run status and resources",
+          "request": {
+            "name": "Get run status and resources",
+            "description": {
+              "content": "Retrieve run status and resource states. Frontend polls this endpoint to display progress.\n\n**Response includes:**\n- Run metadata (workspace, status, timestamps)\n- `metadata` object with resource counts, git commit, and timing info\n- `resources` array with per-resource status and duration\n\n**Frontend polling (from ADR-012):**\n```typescript\n// Poll every 2 seconds while running\nconst { data: run } = useQuery({\n  queryKey: ['run', runId],\n  queryFn: () => fetchRun(runId),\n  refetchInterval: (query) => {\n    const status = query.state.data?.status;\n    return status === 'running' || status === 'pending' ? 2000 : false;\n  },\n});\n```\n\n**Supported status values:**\n- `pending` - Run created, waiting for first event\n- `running` - Receiving events from CLI\n- `succeeded` - Terraform apply exit code 0\n- `failed` - Terraform apply exit code != 0\n- `timeout` - No events within 30 min, or total TTL (4 hours) exceeded\n- `disconnected` - CLI connection lost, didn't reconnect within 2-min grace period\n\n**Resource status values:**\n- `pending` - Waiting to execute\n- `running` - Currently executing\n- `succeeded` - Completed successfully\n- `failed` - Execution failed\n\nSee [ADR-012](https://github.com/sageox/sageox/blob/main/docs/adr/012-run-event-processing.md) for full schema.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "runs",
+                ":run_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "run_id",
+                  "description": "(Required) UUIDv7 run identifier"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "8843387e-78e2-49a4-aa58-a03d266ff234",
+              "name": "Run details retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"018c5e72-1b3a-7def-8abc-123456789012\",\n  \"workspace_id\": \"ws_abc123def456\",\n  \"status\": \"running\",\n  \"plan_path\": \"workspaces/acme-corp/prod/plan.json\",\n  \"created_at\": \"2025-01-01T00:00:00Z\",\n  \"completed_at\": null,\n  \"metadata\": {\n    \"git_commit\": \"abc123deadbeef1234567890abcdef123456789\",\n    \"terraform_version\": \"1.9.5\",\n    \"resource_count\": 12,\n    \"resources_completed\": 5,\n    \"last_event_at\": \"2025-01-01T00:04:50Z\",\n    \"error_message\": null,\n    \"apply_commit\": null\n  },\n  \"resources\": [\n    {\n      \"address\": \"aws_s3_bucket.main\",\n      \"resource_type\": \"aws_s3_bucket\",\n      \"status\": \"succeeded\",\n      \"started_at\": \"2025-01-01T00:00:05Z\",\n      \"completed_at\": \"2025-01-01T00:00:10Z\",\n      \"duration_ms\": 2340,\n      \"metadata\": {\n        \"name\": \"main\",\n        \"provider\": \"aws\",\n        \"category\": \"storage\",\n        \"lifecycle\": \"create\",\n        \"run_index\": 0,\n        \"dependencies\": [],\n        \"error_message\": null\n      }\n    },\n    {\n      \"address\": \"aws_vpc.main\",\n      \"resource_type\": \"aws_vpc\",\n      \"status\": \"running\",\n      \"started_at\": \"2025-01-01T00:00:12Z\",\n      \"completed_at\": null,\n      \"duration_ms\": null,\n      \"metadata\": {\n        \"name\": \"main\",\n        \"provider\": \"aws\",\n        \"category\": \"network\",\n        \"lifecycle\": \"create\",\n        \"run_index\": 1,\n        \"dependencies\": [],\n        \"error_message\": null\n      }\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "6282cd18-88c1-46c3-be89-6aee5d61eed9",
+              "name": "Unauthorized (invalid or missing authentication token)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1724fb5c-d204-4e33-a199-06d954cb5f40",
+              "name": "Run not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "runs",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) UUIDv7 run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "de27f721-f997-4f13-9e45-a4b5db1ba98b",
+          "name": "Initialize new run (deprecated)",
+          "request": {
+            "name": "Initialize new run (deprecated)",
+            "description": {
+              "content": "DEPRECATED: Use `POST /api/v1/runs/prepare` instead.\n\nCreates a new run for the specified environment with infrastructure files.\nThis endpoint is maintained for backwards compatibility only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "env",
+                ":env_id",
+                "run",
+                "init"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "env_id",
+                  "description": "(Required) Environment identifier"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"<string>\",\n  \"infrastructure_files\": {\n    \"key_0\": \"<string>\",\n    \"key_1\": \"<string>\",\n    \"key_2\": \"<string>\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "9db92789-08fd-492d-9c61-c910b3f35427",
+              "name": "Run initialized successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"<string>\",\n  \"infrastructure_files\": {\n    \"key_0\": \"<string>\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"a0a7456f-6dc8-81f6-3d11-ea194c9d5e89\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f31bcd5a-75cf-45e0-bb08-16bb9971a87a",
+              "name": "Invalid request body",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"<string>\",\n  \"infrastructure_files\": {\n    \"key_0\": \"<string>\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "a001aaa2-25e2-4072-8a06-827ef184c6e5",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"<string>\",\n  \"infrastructure_files\": {\n    \"key_0\": \"<string>\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "f27e0f11-15a2-4c3c-a80c-42d35256bf4a",
+              "name": "Environment not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    "init"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"description\": \"<string>\",\n  \"infrastructure_files\": {\n    \"key_0\": \"<string>\"\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "9c90e4c4-fc55-4598-99ba-79d12ee9a6d4",
+          "name": "Update run with step data (deprecated)",
+          "request": {
+            "name": "Update run with step data (deprecated)",
+            "description": {
+              "content": "DEPRECATED: Use `POST /api/v1/runs/{run_id}/events` for streaming instead.\n\nUpdates an existing run with data from a specific step.\nThis endpoint is maintained for backwards compatibility only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "env",
+                ":env_id",
+                "run",
+                ":run_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "env_id",
+                  "description": "(Required) Environment identifier"
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "run_id",
+                  "description": "(Required) Run identifier"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"step\": \"<string>\",\n  \"data\": \"<object>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "d2294822-8065-48d2-94a8-af1483a558fc",
+              "name": "Run updated successfully (no content)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": \"<string>\",\n  \"data\": \"<object>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "565e3ffb-ea29-4ce4-ae87-3a161f0cbf22",
+              "name": "Invalid request body",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": \"<string>\",\n  \"data\": \"<object>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4734d29e-4e81-4ca7-94f5-cb27280eb37f",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": \"<string>\",\n  \"data\": \"<object>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "01066955-085d-4918-b463-9b6b6e1c5ff1",
+              "name": "Environment or run not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"step\": \"<string>\",\n  \"data\": \"<object>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a716d41e-5fda-4c67-87ac-c0202eaa7bbc",
+          "name": "Complete or fail run (deprecated)",
+          "request": {
+            "name": "Complete or fail run (deprecated)",
+            "description": {
+              "content": "DEPRECATED: Use `POST /api/v1/runs/{run_id}/complete` instead.\n\nMarks a run as completed or failed with an optional message.\nThis endpoint is maintained for backwards compatibility only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "env",
+                ":env_id",
+                "run",
+                ":run_id",
+                "status"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "env_id",
+                  "description": "(Required) Environment identifier"
+                },
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<uuid>",
+                  "key": "run_id",
+                  "description": "(Required) Run identifier"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"<string>\",\n  \"message\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "1f5e9e8d-9d16-41f8-ba8c-30fa778430f2",
+              "name": "Run status updated successfully (no content)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"<string>\",\n  \"message\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "29351ce8-fc2f-42bc-a935-f3fb1543460d",
+              "name": "Invalid request body",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"<string>\",\n  \"message\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ab7ecbcd-2df2-49c5-a946-724eaf99bb4c",
+              "name": "Unauthorized",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"<string>\",\n  \"message\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "99bb838e-9b8f-460d-a5dd-3cec59a6825e",
+              "name": "Environment or run not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "env",
+                    ":env_id",
+                    "run",
+                    ":run_id",
+                    "status"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "env_id",
+                      "description": "(Required) Environment identifier"
+                    },
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<uuid>",
+                      "key": "run_id",
+                      "description": "(Required) Run identifier"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"<string>\",\n  \"message\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Invalid request parameters\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:3000",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "101182a1-5f1c-4af8-be30-09ca66673a4b",
+    "name": "SageOx Admin runs API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n\n\nContact Support:\n Name: SageOx Team",
+      "type": "text/plain"
+    }
+  }
+}

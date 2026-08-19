@@ -1,0 +1,2555 @@
+{
+  "item": [
+    {
+      "id": "aff3013d-5198-41aa-8776-890a40dab6c3",
+      "name": "Firmware Admin",
+      "description": {
+        "content": "",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "ef124698-24e8-4bb2-829b-89a9c6160c65",
+          "name": "Upload new firmware release",
+          "request": {
+            "name": "Upload new firmware release",
+            "description": {
+              "content": "Create a firmware release record and get a pre-signed S3 upload URL for\nthe binary. The release starts in `staged` status and must be explicitly\nactivated via the activate endpoint.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_type\": \"<string>\",\n  \"version\": \"<string>\",\n  \"sha256\": \"<string>\",\n  \"size_bytes\": \"<long>\",\n  \"signature\": \"<string>\",\n  \"changelog\": \"<string>\",\n  \"release_date\": \"<date>\",\n  \"min_version\": \"<string>\",\n  \"channel\": \"stable\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "e0ba5d40-efa9-4233-b10f-9d8873360bde",
+              "name": "Release created. Upload the binary to the returned URL.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"device_type\": \"scribe\",\n  \"version\": \"1.2.0\",\n  \"sha256\": \"<string>\",\n  \"size_bytes\": \"<long>\",\n  \"signature\": \"<string>\",\n  \"changelog\": \"<string>\",\n  \"release_date\": \"<date>\",\n  \"min_version\": \"<string>\",\n  \"channel\": \"stable\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"release\": {\n    \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n    \"device_type\": \"string\",\n    \"version\": \"string\",\n    \"s3_key\": \"string\",\n    \"sha256\": \"string\",\n    \"signature\": \"string\",\n    \"size_bytes\": 3986,\n    \"changelog\": \"string\",\n    \"release_date\": \"1992-12-22\",\n    \"min_version\": \"string\",\n    \"rollout_percent\": 3,\n    \"status\": \"staged\",\n    \"channel\": \"beta\",\n    \"uploaded_by\": \"string\",\n    \"activated_at\": \"2024-10-27T10:35:40.757Z\",\n    \"paused_at\": \"1976-03-07T23:03:50.607Z\",\n    \"paused_by\": \"string\",\n    \"pause_reason\": \"string\",\n    \"created_at\": \"1974-08-20T16:06:06.850Z\",\n    \"updated_at\": \"2009-05-13T12:34:18.764Z\"\n  },\n  \"upload_url\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "479ae3d4-2c75-421e-a4dc-34749f4b9fb5",
+              "name": "Invalid request (missing fields, bad SHA-256 format, etc.).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"device_type\": \"scribe\",\n  \"version\": \"1.2.0\",\n  \"sha256\": \"<string>\",\n  \"size_bytes\": \"<long>\",\n  \"signature\": \"<string>\",\n  \"changelog\": \"<string>\",\n  \"release_date\": \"<date>\",\n  \"min_version\": \"<string>\",\n  \"channel\": \"stable\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "637ec7fe-10bd-4c0b-af68-f4ed3462c71d",
+              "name": "Version already exists for this device type and channel.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"device_type\": \"scribe\",\n  \"version\": \"1.2.0\",\n  \"sha256\": \"<string>\",\n  \"size_bytes\": \"<long>\",\n  \"signature\": \"<string>\",\n  \"changelog\": \"<string>\",\n  \"release_date\": \"<date>\",\n  \"min_version\": \"<string>\",\n  \"channel\": \"stable\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "d5d955c2-630c-4f78-9a2e-3709d1ce53a0",
+          "name": "List firmware releases",
+          "request": {
+            "name": "List firmware releases",
+            "description": {
+              "content": "List all firmware releases for a device type, newest first.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "device_type",
+                  "value": "scribe",
+                  "description": "Filter by device type. Defaults to `scribe`."
+                },
+                {
+                  "disabled": false,
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "disabled": false,
+                  "key": "offset",
+                  "value": "0"
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "47f9929e-f93b-4267-86a1-8e94aff3668f",
+              "name": "Paginated list of firmware releases.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "device_type",
+                      "value": "scribe"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"items\": [\n    {\n      \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n      \"device_type\": \"string\",\n      \"version\": \"string\",\n      \"s3_key\": \"string\",\n      \"sha256\": \"string\",\n      \"signature\": \"string\",\n      \"size_bytes\": 53,\n      \"changelog\": \"string\",\n      \"release_date\": \"1962-02-27\",\n      \"min_version\": \"string\",\n      \"rollout_percent\": 74,\n      \"status\": \"active\",\n      \"channel\": \"early-access\",\n      \"uploaded_by\": \"string\",\n      \"activated_at\": \"1988-08-13T03:26:46.901Z\",\n      \"paused_at\": \"1974-02-18T04:20:20.778Z\",\n      \"paused_by\": \"string\",\n      \"pause_reason\": \"string\",\n      \"created_at\": \"2020-02-13T07:59:18.689Z\",\n      \"updated_at\": \"1976-09-28T04:13:38.592Z\"\n    },\n    {\n      \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n      \"device_type\": \"string\",\n      \"version\": \"string\",\n      \"s3_key\": \"string\",\n      \"sha256\": \"string\",\n      \"signature\": \"string\",\n      \"size_bytes\": 8779,\n      \"changelog\": \"string\",\n      \"release_date\": \"1981-01-05\",\n      \"min_version\": \"string\",\n      \"rollout_percent\": 33,\n      \"status\": \"active\",\n      \"channel\": \"beta\",\n      \"uploaded_by\": \"string\",\n      \"activated_at\": \"1997-05-18T08:08:27.881Z\",\n      \"paused_at\": \"1954-11-07T10:30:50.524Z\",\n      \"paused_by\": \"string\",\n      \"pause_reason\": \"string\",\n      \"created_at\": \"2018-01-15T16:18:31.061Z\",\n      \"updated_at\": \"2011-07-14T18:04:29.559Z\"\n    }\n  ],\n  \"pagination\": {\n    \"total\": 7933,\n    \"limit\": 7408,\n    \"offset\": 9139,\n    \"has_more\": true\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "3b9fc607-96dc-4e8c-a0fd-d935904cf66c",
+          "name": "Update min_version security floor and/or rollout percentage",
+          "request": {
+            "name": "Update min_version security floor and/or rollout percentage",
+            "description": {
+              "content": "Update mutable fields on a firmware release. At least one of `min_version`\nor `rollout_percent` must be supplied.\n\n- `min_version`: devices running below this floor get a forced update (no\n  skip option). Send an empty string to clear the floor.\n- `rollout_percent`: percentage of the cohort (0-100) eligible to receive\n  this release. Device IDs are hashed into a 0-99 bucket; a device is\n  served only if its bucket is below the configured percent. Use this to\n  gradually expand a release from canary to full rollout.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware",
+                ":firmware_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "firmware_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"min_version\": \"<string>\",\n  \"rollout_percent\": \"<integer>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "7e8ab60d-1879-4654-9902-2e3c347234ec",
+              "name": "Updated release.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"min_version\": \"<string>\",\n  \"rollout_percent\": \"<integer>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"device_type\": \"string\",\n  \"version\": \"string\",\n  \"s3_key\": \"string\",\n  \"sha256\": \"string\",\n  \"signature\": \"string\",\n  \"size_bytes\": 6541,\n  \"changelog\": \"string\",\n  \"release_date\": \"1985-04-26\",\n  \"min_version\": \"string\",\n  \"rollout_percent\": 54,\n  \"status\": \"active\",\n  \"channel\": \"nightly\",\n  \"uploaded_by\": \"string\",\n  \"activated_at\": \"1981-05-28T23:17:43.451Z\",\n  \"paused_at\": \"2025-07-10T03:52:50.558Z\",\n  \"paused_by\": \"string\",\n  \"pause_reason\": \"string\",\n  \"created_at\": \"1991-01-31T23:01:31.437Z\",\n  \"updated_at\": \"1995-08-01T20:59:33.497Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "4a59df92-f89b-45ae-a972-e5b547ec372d",
+              "name": "Neither min_version nor rollout_percent supplied, or rollout_percent out of range.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"min_version\": \"<string>\",\n  \"rollout_percent\": \"<integer>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "6a2b2c9e-2581-4a8b-9e36-2129cbb13a78",
+              "name": "Release not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"min_version\": \"<string>\",\n  \"rollout_percent\": \"<integer>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f14bfe6e-560c-4432-aac8-31c81bdb8974",
+          "name": "Activate a staged firmware release",
+          "request": {
+            "name": "Activate a staged firmware release",
+            "description": {
+              "content": "Atomically returns the current active release to `staged` and activates\nthe specified one. Only releases in `staged` status can be activated.\n\n**Rollback:** To rollback, activate any previous staged release.\nThe old active release returns to `staged`, so it can be re-activated later.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware",
+                ":firmware_id",
+                "activate"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "firmware_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "452b4c41-0df5-4e95-8ec8-71f50894da53",
+              "name": "Release activated.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "activate"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"device_type\": \"string\",\n  \"version\": \"string\",\n  \"s3_key\": \"string\",\n  \"sha256\": \"string\",\n  \"signature\": \"string\",\n  \"size_bytes\": 6541,\n  \"changelog\": \"string\",\n  \"release_date\": \"1985-04-26\",\n  \"min_version\": \"string\",\n  \"rollout_percent\": 54,\n  \"status\": \"active\",\n  \"channel\": \"nightly\",\n  \"uploaded_by\": \"string\",\n  \"activated_at\": \"1981-05-28T23:17:43.451Z\",\n  \"paused_at\": \"2025-07-10T03:52:50.558Z\",\n  \"paused_by\": \"string\",\n  \"pause_reason\": \"string\",\n  \"created_at\": \"1991-01-31T23:01:31.437Z\",\n  \"updated_at\": \"1995-08-01T20:59:33.497Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "34972349-aa8d-4e2f-b77c-33fa97bee151",
+              "name": "Release is not in staged status.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "activate"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "1b289dc7-f65c-4bba-91ec-a69bdca494c6",
+              "name": "Release not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "activate"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "9de44ab0-1998-4c2c-82cd-3bb489a04d3a",
+          "name": "Pause a firmware release (fleet-wide kill-switch)",
+          "request": {
+            "name": "Pause a firmware release (fleet-wide kill-switch)",
+            "description": {
+              "content": "Sets `paused_at` on the release. While paused, the manifest resolver\nreturns 204 No Content for this release even for devices in its rollout\ncohort. Independent of `rollout_percent` — pause is the kill-switch primitive.\n\nThe audit trail records `paused_by` and `pause_reason`.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware",
+                ":firmware_id",
+                "pause"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "firmware_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "ef1f44f4-ed0f-4243-8890-10e03ca2986a",
+              "name": "Release paused.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "pause"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"device_type\": \"string\",\n  \"version\": \"string\",\n  \"s3_key\": \"string\",\n  \"sha256\": \"string\",\n  \"signature\": \"string\",\n  \"size_bytes\": 6541,\n  \"changelog\": \"string\",\n  \"release_date\": \"1985-04-26\",\n  \"min_version\": \"string\",\n  \"rollout_percent\": 54,\n  \"status\": \"active\",\n  \"channel\": \"nightly\",\n  \"uploaded_by\": \"string\",\n  \"activated_at\": \"1981-05-28T23:17:43.451Z\",\n  \"paused_at\": \"2025-07-10T03:52:50.558Z\",\n  \"paused_by\": \"string\",\n  \"pause_reason\": \"string\",\n  \"created_at\": \"1991-01-31T23:01:31.437Z\",\n  \"updated_at\": \"1995-08-01T20:59:33.497Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "0df45f11-2e85-47a4-b68b-d2b5c108160e",
+              "name": "Missing reason or release already paused.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "pause"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "6190632f-ebc6-4634-aeb5-faad32b693cc",
+              "name": "Release not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "pause"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7c862c61-83f6-4b55-a544-e1df4619b60c",
+          "name": "Resume a paused firmware release",
+          "request": {
+            "name": "Resume a paused firmware release",
+            "description": {
+              "content": "Clears `paused_at`, `paused_by`, and `pause_reason` on the release. The\nmanifest resolver will once again serve this release to eligible devices.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware",
+                ":firmware_id",
+                "resume"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "firmware_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "b9608b7b-7d7d-4489-8946-e0f51f3cb9a0",
+              "name": "Release resumed.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "resume"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"device_type\": \"string\",\n  \"version\": \"string\",\n  \"s3_key\": \"string\",\n  \"sha256\": \"string\",\n  \"signature\": \"string\",\n  \"size_bytes\": 6541,\n  \"changelog\": \"string\",\n  \"release_date\": \"1985-04-26\",\n  \"min_version\": \"string\",\n  \"rollout_percent\": 54,\n  \"status\": \"active\",\n  \"channel\": \"nightly\",\n  \"uploaded_by\": \"string\",\n  \"activated_at\": \"1981-05-28T23:17:43.451Z\",\n  \"paused_at\": \"2025-07-10T03:52:50.558Z\",\n  \"paused_by\": \"string\",\n  \"pause_reason\": \"string\",\n  \"created_at\": \"1991-01-31T23:01:31.437Z\",\n  \"updated_at\": \"1995-08-01T20:59:33.497Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "7274ed39-cc22-46c7-b4a9-51c653685f62",
+              "name": "Release is not paused.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "resume"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "7683c135-6f30-479c-b313-7a7923134411",
+              "name": "Release not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "resume"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f6833fdd-0e1d-416b-a82d-a56dae3f4ffc",
+          "name": "List firmware catalog with fleet rollout signals",
+          "request": {
+            "name": "List firmware catalog with fleet rollout signals",
+            "description": {
+              "content": "Catalog view of firmware releases enriched with fleet-derived signals:\ndevice counts, adoption series, crash counts, and pause status. Used by\nthe HQ web console to render the fleet dashboard. Distinct from the basic\nlist endpoint because it joins against `physical_devices` and\n`device_update_events`.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware",
+                "catalog"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "device_type",
+                  "value": "scribe",
+                  "description": "Filter by hardware type (e.g. scribe). Defaults to scribe."
+                },
+                {
+                  "disabled": false,
+                  "key": "channel",
+                  "value": "<string>",
+                  "description": "Filter by release channel."
+                },
+                {
+                  "disabled": false,
+                  "key": "status",
+                  "value": "<string>",
+                  "description": "Filter by release status."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c14ef8fe-29c4-451a-bcc2-52274238d16c",
+              "name": "Catalog entries, newest first.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    "catalog"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "device_type",
+                      "value": "scribe"
+                    },
+                    {
+                      "key": "channel",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "status",
+                      "value": "<string>"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n    \"version\": \"string\",\n    \"device_type\": \"string\",\n    \"channel\": \"early-access\",\n    \"status\": \"active\",\n    \"uploaded_by\": \"string\",\n    \"created_at\": \"1971-01-28T12:24:13.554Z\",\n    \"activated_at\": \"2020-02-16T23:18:28.329Z\",\n    \"paused_at\": \"2022-12-31T13:18:03.428Z\",\n    \"paused_by\": \"string\",\n    \"pause_reason\": \"string\",\n    \"sha256\": \"cd458297ce850a114ff31b8a791260c2225b7dcbf9d53702856d5b1690687da4\",\n    \"size_bytes\": 8219,\n    \"current_device_count\": 9498,\n    \"ever_updated_count\": 6697,\n    \"crash_count_last_7d\": 4430,\n    \"adoption_series\": [\n      {\n        \"date\": \"2012-01-19\",\n        \"count\": 7805\n      },\n      {\n        \"date\": \"2007-11-26\",\n        \"count\": 4639\n      }\n    ]\n  },\n  {\n    \"id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n    \"version\": \"string\",\n    \"device_type\": \"string\",\n    \"channel\": \"stable\",\n    \"status\": \"staged\",\n    \"uploaded_by\": \"string\",\n    \"created_at\": \"1981-10-20T14:48:58.339Z\",\n    \"activated_at\": \"2014-12-24T20:50:49.477Z\",\n    \"paused_at\": \"1954-08-19T14:19:49.284Z\",\n    \"paused_by\": \"string\",\n    \"pause_reason\": \"string\",\n    \"sha256\": \"62ba70a630decac387155056fbc9123bc816259334c7739ff43199bef4c6593a\",\n    \"size_bytes\": 1814,\n    \"current_device_count\": 7724,\n    \"ever_updated_count\": 512,\n    \"crash_count_last_7d\": 7760,\n    \"adoption_series\": [\n      {\n        \"date\": \"1990-03-12\",\n        \"count\": 2160\n      },\n      {\n        \"date\": \"1991-06-27\",\n        \"count\": 4187\n      }\n    ]\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "219d6c9f-9d7b-4b20-a4e4-3ff0e2524fd3",
+          "name": "Preview rollout cohort without targeting devices",
+          "request": {
+            "name": "Preview rollout cohort without targeting devices",
+            "description": {
+              "content": "Evaluate a candidate cohort selector and report how many devices would\nmatch, how many are eligible (after policy/version/hardware filters), and\nwhich devices are excluded and why. Read-only — no devices are targeted.\n\nUsed by the HQ console to give operators confidence before they create a\nreal rollout.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "firmware",
+                ":firmware_id",
+                "dryrun"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "firmware_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"target_cohort\": {\n    \"channel\": \"<string>\",\n    \"from_version_glob\": \"<string>\",\n    \"group_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "ed7b4b65-59e2-4b45-9558-a993c7b0c214",
+              "name": "Dryrun result.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "dryrun"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"target_cohort\": {\n    \"channel\": \"<string>\",\n    \"from_version_glob\": \"<string>\",\n    \"group_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"matched_count\": 945,\n  \"eligible_count\": 9934,\n  \"excluded_disabled_devices\": 1422,\n  \"excluded_pinned_elsewhere\": 6081,\n  \"below_min_version\": 9432,\n  \"already_on_target_version\": 6324,\n  \"notes\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "da855474-47f6-472f-a2bd-a045e954c1cd",
+              "name": "Invalid cohort selector.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "dryrun"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"target_cohort\": {\n    \"channel\": \"<string>\",\n    \"from_version_glob\": \"<string>\",\n    \"group_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "10b110ea-07b7-4632-8f16-10f5103ef065",
+              "name": "Release not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "firmware",
+                    ":firmware_id",
+                    "dryrun"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "firmware_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"target_cohort\": {\n    \"channel\": \"<string>\",\n    \"from_version_glob\": \"<string>\",\n    \"group_ids\": [\n      \"<string>\",\n      \"<string>\"\n    ]\n  }\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "6e2e1b24-db86-475b-b6cb-16127192f7f5",
+          "name": "Pin a device to a specific firmware release",
+          "request": {
+            "name": "Pin a device to a specific firmware release",
+            "description": {
+              "content": "Creates or replaces the firmware pin for a single device. While pinned,\nthe manifest resolver serves the targeted release regardless of the\ndevice's channel — provided the device's `ota_policy` is `pinned`.\n\nPins are the primary pilot-testing primitive: bring a single rig onto\nbeta firmware without affecting the rest of the fleet.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "devices",
+                ":device_id",
+                "firmware-target"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "device_id",
+                  "description": "(Required) Hardware device ID (12-character lowercase hex MAC for scribe)."
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firmware_id\": \"<string>\",\n  \"reason\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "2ba40722-0210-4329-b6b7-facc38bcbf9c",
+              "name": "Pin created or replaced.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "firmware-target"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) Hardware device ID (12-character lowercase hex MAC for scribe)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"device_id\": \"aabbccddeeff\",\n  \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"pinned_by\": \"string\",\n  \"pinned_at\": \"1956-11-15T10:35:05.989Z\",\n  \"reason\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "45378834-e8de-4126-aacb-07b529d82dd1",
+              "name": "Invalid request (missing fields, unknown firmware_id).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "firmware-target"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) Hardware device ID (12-character lowercase hex MAC for scribe)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "5e78e539-6404-4a3a-839f-f3116a432baf",
+              "name": "Device not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "firmware-target"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) Hardware device ID (12-character lowercase hex MAC for scribe)."
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a9943197-9fc0-41e2-99fe-e3f60c932674",
+          "name": "Remove a device firmware pin",
+          "request": {
+            "name": "Remove a device firmware pin",
+            "description": {
+              "content": "Deletes the pin for a device. The device returns to channel-based\nresolution. Note this does not change `ota_policy`; if the device is\nstill in `pinned` policy with no pin, the resolver returns 204\n(intentional: prevents accidental re-targeting onto the channel).\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "devices",
+                ":device_id",
+                "firmware-target"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "device_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "267ebb25-0fbb-4fc6-b01f-32a5a3bbf76a",
+              "name": "Pin removed (or never existed).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "firmware-target"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "a973d506-4453-44a5-bd4d-e5f6450925ab",
+              "name": "Device not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "firmware-target"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "13298be9-59ad-41b1-ba7f-1a7450b45a2d",
+          "name": "Get the OTA policy for a device",
+          "request": {
+            "name": "Get the OTA policy for a device",
+            "description": {
+              "content": "Returns the device's OTA policy plus optional firmware pin (when policy is\n`pinned`). Precedence in the resolver: `disabled` > `pinned` > `auto`.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "devices",
+                ":device_id",
+                "ota-policy"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "device_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "92447d55-8c51-4a39-b315-d91d045380d7",
+              "name": "Device OTA policy state.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "ota-policy"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"policy\": \"disabled\",\n  \"reason\": \"string\",\n  \"set_by\": \"string\",\n  \"set_at\": \"2016-07-22T23:43:19.146Z\",\n  \"firmware_target\": {\n    \"device_id\": \"aabbccddeeff\",\n    \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n    \"pinned_by\": \"string\",\n    \"pinned_at\": \"1986-10-03T16:22:26.806Z\",\n    \"reason\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c49b8cf3-923e-46fc-964a-28ff5c4ae5b6",
+              "name": "Device not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "ota-policy"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "7703abe1-28a6-4490-bbd8-aa9f3e11ad80",
+          "name": "Set the OTA policy for a device",
+          "request": {
+            "name": "Set the OTA policy for a device",
+            "description": {
+              "content": "Set `ota_policy` to `auto`, `pinned`, or `disabled` for a single device.\nRecords `set_by` and `set_at` for the audit trail.\n\nSwitching to `pinned` does NOT create a pin — call PUT\n`/devices/{device_id}/firmware-target` separately. Until a pin exists,\na `pinned` device receives 204 from the manifest resolver.\n\nSwitching to `disabled` is the strongest signal: the resolver returns 204\nunconditionally. Used for engineering rigs and devices flashed manually.\n\n**Auth:** JWT + HQ admin only.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "internal",
+                "hq",
+                "devices",
+                ":device_id",
+                "ota-policy"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "device_id",
+                  "description": "(Required) "
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PUT",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"policy\": \"<string>\",\n  \"reason\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "f8119bdd-c1b9-47dc-bafb-a1df9cdc57c5",
+              "name": "Policy updated.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "ota-policy"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policy\": \"<string>\",\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"policy\": \"<string>\",\n  \"reason\": \"string\",\n  \"set_by\": \"string\",\n  \"set_at\": \"1968-05-05T14:40:00.190Z\",\n  \"firmware_target\": {\n    \"device_id\": \"aabbccddeeff\",\n    \"firmware_id\": \"fw_019d68dd-eda3-70d6-84bf-000000000001\",\n    \"pinned_by\": \"string\",\n    \"pinned_at\": \"1955-09-18T03:06:56.259Z\",\n    \"reason\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "8f3d6a4f-b902-4ed2-a537-300d17cc920d",
+              "name": "Invalid policy value or missing reason.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "ota-policy"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policy\": \"<string>\",\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "f1559883-b268-45ab-a51b-4ef5817889f5",
+              "name": "Device not found.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "internal",
+                    "hq",
+                    "devices",
+                    ":device_id",
+                    "ota-policy"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "device_id",
+                      "description": "(Required) "
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PUT",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"policy\": \"<string>\",\n  \"reason\": \"<string>\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:3000",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "ca3df613-c20e-49ab-9964-2f5158ada31e",
+    "name": "SageOx Admin Firmware Admin API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n\n\nContact Support:\n Name: SageOx Team",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Admin",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get top sessions by token usage",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/admin/sessions/top",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the top 5 sessions ranked by total token consumption\nin the last 7 days. Sessions are grouped by ox_sid and include\nagent/model metadata.\n"
+        },
+        {
+          "info": {
+            "name": "Get session details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/admin/sessions/:sid",
+            "params": [
+              {
+                "name": "sid",
+                "value": "oxsid_abc123xyz",
+                "type": "path",
+                "description": "Session ID (ox_sid)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns detailed analytics for a specific session including\ntimeline of accesses, path exploration tree, and metadata.\n"
+        },
+        {
+          "info": {
+            "name": "Get top paths by TF-IDF score",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/admin/paths/top",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the top 10 guidance paths weighted by TF-IDF score.\nThis highlights paths that are unexpectedly popular relative\nto their baseline expectation (deeper paths get a bonus).\n"
+        },
+        {
+          "info": {
+            "name": "Get top agents by usage",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/admin/agents/top",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns top coding agents (claude-code, cursor, windsurf, etc.)\nranked by total token usage in the last 7 days.\n"
+        },
+        {
+          "info": {
+            "name": "Get top models by usage",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/admin/models/top",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns top AI models (claude-opus-4-5, gpt-4o, etc.)\nranked by total token usage in the last 7 days.\n"
+        },
+        {
+          "info": {
+            "name": "Get top ox-cli versions by usage",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/admin/versions/top",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns top ox-cli versions ranked by total token usage\nin the last 7 days. Version is parsed from User-Agent header.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

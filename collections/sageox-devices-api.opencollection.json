@@ -1,0 +1,248 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Devices API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Devices",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List devices paired to the current user",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/devices"
+          },
+          "docs": "Returns every device the authenticated user has registered, ordered\nmost-recently-active first (by `last_seen_at DESC NULLS LAST`, then\n`paired_at DESC`). Used by the browser dashboard on /device when\ncalled without a user_code query param.\n"
+        },
+        {
+          "info": {
+            "name": "Register (or re-register) a device after pairing",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/devices/register",
+            "headers": [
+              {
+                "name": "X-Device-ID",
+                "value": "aabbccddeeff"
+              },
+              {
+                "name": "X-Pairing-User-Code",
+                "value": "ABCD1234"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Called by the firmware immediately after the OAuth device-code flow\ncompletes. Idempotent on the server: upserts the `devices` row keyed\nby `(user_id, X-Device-ID)` so a re-register is safe and refreshes\nserver-visible facts such as `firmware_version`, `name`, and\n`ota_slot_bytes`.\n\nRe-register is the supported path for a device to override the\nserver's legacy assumed OTA slot once newer firmware can report the\nreal partition size.\n\nIf the `X-Pairing-User-Code` header is set, the handler consume"
+        },
+        {
+          "info": {
+            "name": "Store a team selection for an in-flight device pairing",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/devices/pairing-intents",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Called by the /device browser interstitial BEFORE\n`authClient.device.approve()`, so that the scribe's follow-up\n`POST /api/v1/devices/register` call (which carries\n`X-Pairing-User-Code`) can resolve the user's team choice.\n\nThe row is keyed by the normalized user_code (uppercased, hyphens\nand spaces stripped) and scoped to the caller's user_id to prevent\ncross-user hijack even if two users somehow receive the same\nuser_code. Rows auto-expire after 10 minutes — matching the OAuth\ndevice code life"
+        },
+        {
+          "info": {
+            "name": "Fetch a single device by ID",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/devices/:device_id",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path",
+                "description": "Internal `dev_<uuidv7>` id"
+              }
+            ]
+          },
+          "docs": "Returns the full device details for the settings page. The owner\nsees the complete `DeviceResponse` including the hardware MAC\n(`device_id`). Team members who don't own the device see the\n`TeamDeviceResponse` projection (MAC and user_id omitted).\nEveryone else gets 404 to prevent device enumeration.\n"
+        },
+        {
+          "info": {
+            "name": "Rename a device or reassign it to a different team",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/devices/:device_id",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path",
+                "description": "Internal `dev_<uuidv7>` id"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Called by the browser dashboard to rename a device or move it\nbetween teams. Caller must own the device (`devices.user_id ==\nJWT.user_id`) and, when changing `team_id`, must be a member of\nthe target team.\n"
+        },
+        {
+          "info": {
+            "name": "Logout and unpair a device",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/devices/:device_id",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path",
+                "description": "Internal `dev_<uuidv7>` id"
+              }
+            ]
+          },
+          "docs": "Revokes the device's Better Auth session (if one is tracked via\n`session_id`) and deletes the device row. Only the device owner\ncan perform this operation — non-owners get 404 to prevent\ndevice enumeration.\n\nSession revocation is best-effort: if it fails, the device row\nis still deleted. The session will expire naturally via Better\nAuth's TTL.\n"
+        },
+        {
+          "info": {
+            "name": "Fetch device-scoped config — scribe poll endpoint",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/devices/:device_id/config",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path",
+                "description": "Internal `dev_<uuidv7>` id returned by RegisterDevice"
+              }
+            ]
+          },
+          "docs": "Lean projection of the device row that the firmware polls at boot,\nafter auth refresh, and periodically while idle. Returns the active\n`team_id` the device should apply. Touches `last_seen_at` on every\nsuccessful call.\n\nOwnership is enforced in the handler (404 for nonexistent rows,\n403 for rows belonging to a different user, both distinct from the\n404 returned by the feature flag being off).\n"
+        },
+        {
+          "info": {
+            "name": "Toggle shared-space-mode policy and idle threshold",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/devices/:device_id/config",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path",
+                "description": "Internal `dev_<uuidv7>` id"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Mutates the per-hardware `device_policy` row. Authorized to the\ndevice manager (`device_policy.manager_user_id`) OR an active\nmember of the device's `team_id`. Strict body decoding rejects\nunknown fields with 400 so typos in policy keys surface fast\ninstead of becoming silent no-ops.\n\nPointer-style optional fields: omit a field to preserve its\nexisting value (COALESCE on the upsert). Sending\n`auto_logout_minutes: 0` is a 400, not a no-op — use omission to\nmean \"unchanged\" and the firmware defaul"
+        },
+        {
+          "info": {
+            "name": "List a hub's recording destinations and reported peripherals (Room OS)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/devices/:device_id/destinations",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path",
+                "description": "Internal `dev_<uuidv7>` id"
+              }
+            ]
+          },
+          "docs": "Lean, ESP32-safe list of the recording destinations (teams +\nKnowledge Bubbles) the CURRENT USER can reach, the active one, and\n— Room OS (firmware >= 0.6.0 for a hardware hub; always for a\nsoftware hub) — the peripherals the hub has reported. Auth:\nJWT + canUseDevice (guest-scoped); 404 (not 403) on unauthorized to\nblock device-id enumeration. See ADR-069.\n"
+        },
+        {
+          "info": {
+            "name": "Report a paired peripheral (Room OS, hub-reported)",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/devices/:device_id/peripherals/:external_id",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path"
+              },
+              {
+                "name": "external_id",
+                "value": "chromecast-7c8b9a01",
+                "type": "path",
+                "description": "The peripheral's native id from the hub's perspective (a foreign id, NOT a SageOx prefixed id)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "The hub (firmware on a hardware hub, the app on a software hub)\nreports a peripheral paired to it. Stored per-hardware under\n`physical_devices.metadata.peripherals`, keyed by `external_id`,\nwith a clobber-safe `jsonb_set`. Auth: JWT + canManageDevice (strict\nmanager); 404 (not 403) on unauthorized. See ADR-069.\n"
+        },
+        {
+          "info": {
+            "name": "Remove a paired peripheral (Room OS, admin)",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/devices/:device_id/peripherals/:external_id",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "dev_019d5eff-728b-7a50-a56e-9f843d8378fe",
+                "type": "path"
+              },
+              {
+                "name": "external_id",
+                "value": "chromecast-7c8b9a01",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "The admin removes a peripheral from the hub. Idempotent (removing an\nabsent peripheral is a no-op). Auth: JWT + canManageDevice; 404 on\nunauthorized.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

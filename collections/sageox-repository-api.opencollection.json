@@ -1,0 +1,54 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Repository API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Repository",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Initialize repository tracking",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repo/init",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Registers a git repository with SageOx and creates an associated team.\n\n**Authentication:** Optional\n- **Authenticated:** User becomes owner of newly created team\n- **Unauthenticated:** Creates orphan team (can be claimed later)\n\nIdempotent: if repo_id already exists, returns existing repo/team info.\nUsers can request to merge teams via /api/v1/repo/merge.\n"
+        },
+        {
+          "info": {
+            "name": "Merge concurrent repository registrations",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repo/merge",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Called by ox-cli when it detects multiple .repo_* files (concurrent inits).\nDetermines the canonical repo_id based on UUIDv7 timestamps (time-sortable).\n\n**Current implementation:** Logs the merge request and returns the canonical repo_id.\nFull merge logic is planned for a future release.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

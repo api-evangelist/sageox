@@ -1,0 +1,331 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin AgentX API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "AgentX",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Ingest telemetry events",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/agentx/capture",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Accepts a batch of telemetry events from CLI tools and AI agents.\nEvents are validated, timestamped, and stored in the app's event stream.\n\n**Authentication:** API key (`axk_...`) in `Authorization: Bearer` header.\nNo JWT required — this endpoint is designed for embedding in open-source CLIs.\n\n**Collection controls:** If the app has `collection_enabled: false`, events are\naccepted but silently dropped (returns `{\"status\": 1, \"accepted\": 0}`).\nIf `sample_rate < 1.0`, events are randomly sampled b"
+        },
+        {
+          "info": {
+            "name": "List apps for a team",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/apps",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "query",
+                "description": "Team ID to list apps for. Must be a valid `team_` prefixed ID."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns all AgentX applications registered to the specified team.\nAPI keys are never included in list responses.\n\nThe caller must be an active member of the specified team.\n"
+        },
+        {
+          "info": {
+            "name": "Register a new app",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/agentx/apps",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a new AgentX application and returns the API key.\n\n**The API key is shown only once in this response.** It is not retrievable\nlater via the GET endpoint. To obtain a new key, delete the app and recreate it.\n\nThe caller must be an active member of the specified team.\n\n**Default metadata:** `rate_limit: 1000/min`, `burst_limit: 5000/min`, `monthly_quota: 10M events`.\n"
+        },
+        {
+          "info": {
+            "name": "Get app details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id",
+            "params": [
+              {
+                "name": "app_id",
+                "value": "",
+                "type": "path",
+                "description": "AgentX application ID"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns application details including metadata and settings.\nThe API key is **not** included — it is only shown once at creation time.\n\nRequires JWT authentication and team membership.\n"
+        },
+        {
+          "info": {
+            "name": "Delete an app",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Permanently deletes the application and invalidates its API key.\nAny subsequent capture requests using this key will fail with 401.\n\n**This action is irreversible.** All associated event data remains in storage\nbut is no longer queryable through the dashboard.\n"
+        },
+        {
+          "info": {
+            "name": "Update collection settings",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/settings",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates collection control settings for the app.\n\n- **`collection_enabled`**: When `false`, the capture endpoint accepts events\n  but drops them immediately — zero server-side resources consumed.\n- **`sample_rate`**: Controls what fraction of events are stored (0.0 to 1.0).\n  Events are randomly sampled before database insertion. Set to `1.0` to keep\n  all events, or lower to reduce storage for high-volume apps.\n\nSettings take effect on the next capture request (cached for up to 5 minutes\nin the"
+        },
+        {
+          "info": {
+            "name": "Get KPI summary",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/summary",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns fast KPI data from pre-aggregated counters. Designed for dashboard\nwidgets and overview cards. Responds in <100ms.\n\nReturns events in the last 24 hours. Does not accept date range parameters.\n"
+        },
+        {
+          "info": {
+            "name": "Get overview statistics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/overview",
+            "params": [
+              {
+                "name": "tz",
+                "value": "",
+                "type": "query",
+                "description": "IANA timezone for time series bucketing. Defaults to UTC."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns aggregate statistics for the specified date range: total events,\nunique users, friction event count, friction rate, and latest client version.\n"
+        },
+        {
+          "info": {
+            "name": "Get event time series",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/events",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns time-bucketed event counts grouped by event name.\nBuckets are hourly for ranges <= 7 days, daily for longer ranges.\n"
+        },
+        {
+          "info": {
+            "name": "Get friction forensics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/friction",
+            "params": [
+              {
+                "name": "kind",
+                "value": "",
+                "type": "query",
+                "description": "Filter by friction kind"
+              },
+              {
+                "name": "metrics",
+                "value": "",
+                "type": "query",
+                "description": "Comma-separated list of metric sections to include. Omit to include all."
+              },
+              {
+                "name": "events_limit",
+                "value": "",
+                "type": "query",
+                "description": "Max recent events to return"
+              },
+              {
+                "name": "events_offset",
+                "value": "",
+                "type": "query",
+                "description": "Offset for recent events pagination"
+              },
+              {
+                "name": "compare",
+                "value": "",
+                "type": "query",
+                "description": "Include previous-period comparison"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns comprehensive friction analysis with selective metric loading.\nUse the `metrics` parameter to request only the sections you need — each\nmetric is fetched concurrently for optimal performance.\n\n**Available metrics:** `time_series`, `by_actor`, `by_tool`,\n`top_unknown_commands`, `agent_stats`, `client_versions`, `hotspots`,\n`recent_events`.\n\nWhen `compare=true`, includes a previous-period comparison for trend analysis.\n"
+        },
+        {
+          "info": {
+            "name": "Get command usage ranking",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/commands",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the top 50 commands by usage count with percentage distribution.\nCommand names are extracted from `properties->>'command'` in events.\n"
+        },
+        {
+          "info": {
+            "name": "Get agent type distribution",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/agents",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns event counts grouped by actor and agent type.\nLabels are formatted as `{actor}/{agent_type}` (e.g., `agent/copilot`).\n"
+        },
+        {
+          "info": {
+            "name": "Get version adoption data",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/versions",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns daily event counts grouped by client library version\n(`properties->>'$lib_version'`). Useful for tracking version adoption curves.\n"
+        },
+        {
+          "info": {
+            "name": "Get daily active users",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/users",
+            "params": [
+              {
+                "name": "start_date",
+                "value": "",
+                "type": "query",
+                "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+              },
+              {
+                "name": "end_date",
+                "value": "",
+                "type": "query",
+                "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns daily active user counts. Users are identified by\n`COALESCE(properties->>'$user_id', distinct_id)`.\n"
+        },
+        {
+          "info": {
+            "name": "Export friction events as CSV",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/agentx/:app_id/export",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Streams all friction events for the date range as a CSV download.\n\n**Columns:** `ts`, `event`, `distinct_id`, `kind`, `actor`, `agent_type`,\n`command`, `subcommand`, `input`, `error_msg`, `suggestion`, `lib_version`,\n`path_bucket`, `user_id`.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,2580 @@
+{
+  "item": [
+    {
+      "id": "deefd84a-8744-480a-a572-c2c92fee239d",
+      "name": "AgentX",
+      "description": {
+        "content": "Multi-tenant telemetry platform for CLI tools and AI agents. Register applications,\ningest events via API key authentication, and query analytics through the dashboard API.\n\n**Two authentication models:**\n- **Capture endpoint** (`POST /agentx/capture`): API key (`axk_...`) in `Authorization: Bearer` header. Designed for embedding in open-source CLIs.\n- **Dashboard + CRUD**: JWT authentication with team membership verification per app.\n\n**Key concepts:**\n- **Events** are the core data unit — named, timestamped, with arbitrary JSONB properties\n- **`distinct_id`** identifies a device/machine (SDK-generated UUID, not PII)\n- **`$user_id`** (optional, in properties) correlates events to a logical user\n- **Friction events** follow a convention: `friction.*` event names with `kind`, `actor`, `command` properties\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "174e6556-6e64-4f01-ac45-66f9e6c86826",
+          "name": "Ingest telemetry events",
+          "request": {
+            "name": "Ingest telemetry events",
+            "description": {
+              "content": "Accepts a batch of telemetry events from CLI tools and AI agents.\nEvents are validated, timestamped, and stored in the app's event stream.\n\n**Authentication:** API key (`axk_...`) in `Authorization: Bearer` header.\nNo JWT required — this endpoint is designed for embedding in open-source CLIs.\n\n**Collection controls:** If the app has `collection_enabled: false`, events are\naccepted but silently dropped (returns `{\"status\": 1, \"accepted\": 0}`).\nIf `sample_rate < 1.0`, events are randomly sampled before storage.\n\n**Validation rules:**\n- Event names must match `^[a-z][a-z0-9]*(\\.[a-z][a-z0-9-]*)*$` (dot-namespaced)\n- `distinct_id` is required per event (opaque device/machine identifier)\n- Timestamps older than 89 days or more than 1 day in the future are clamped (not rejected)\n- Properties: max 4KB total per event, max 500 characters per individual value\n- Max 500 events per batch\n\n**Deduplication:** Include `$insert_id` (client-generated UUID) in properties to\nprevent metric inflation from retries. Events with duplicate `$insert_id` values\nwithin a 24-hour window are silently skipped.\n\nSee [Capture endpoint](#tag/AgentX/operation/agentxCapture) for integration examples.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                "capture"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"events\": [\n    {\n      \"event\": \"<string>\",\n      \"distinct_id\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"properties\": {\n        \"key_0\": \"string\",\n        \"key_1\": true\n      }\n    },\n    {\n      \"event\": \"<string>\",\n      \"distinct_id\": \"<string>\",\n      \"timestamp\": \"<dateTime>\",\n      \"properties\": {\n        \"key_0\": true\n      }\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "4aca712c-47eb-464d-9369-657c60bc94db",
+              "name": "Batch accepted. `accepted` indicates how many events were stored (may be less than submitted due to validation or sampling).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "capture"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"events\": [\n    {\n      \"event\": \"command.executed\",\n      \"distinct_id\": \"d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c\",\n      \"properties\": {\n        \"command\": \"deploy\",\n        \"duration_ms\": 1234,\n        \"$lib\": \"my-cli\",\n        \"$lib_version\": \"1.2.0\",\n        \"$insert_id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": 1,\n  \"accepted\": 2\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "1cb17e0a-15ae-4091-ac84-1ef48b39d757",
+              "name": "Invalid request (empty batch, malformed JSON)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "capture"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"events\": [\n    {\n      \"event\": \"command.executed\",\n      \"distinct_id\": \"d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c\",\n      \"properties\": {\n        \"command\": \"deploy\",\n        \"duration_ms\": 1234,\n        \"$lib\": \"my-cli\",\n        \"$lib_version\": \"1.2.0\",\n        \"$insert_id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "ec5ba454-3768-4d14-a268-bcd1e8af4294",
+              "name": "Batch exceeds 500 events",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "capture"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"events\": [\n    {\n      \"event\": \"command.executed\",\n      \"distinct_id\": \"d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c\",\n      \"properties\": {\n        \"command\": \"deploy\",\n        \"duration_ms\": 1234,\n        \"$lib\": \"my-cli\",\n        \"$lib_version\": \"1.2.0\",\n        \"$insert_id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Request Entity Too Large",
+              "code": 413,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "a7a1d27e-f8e6-4db1-ab80-7aad438d8acc",
+              "name": "Rate limit exceeded",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "capture"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"events\": [\n    {\n      \"event\": \"command.executed\",\n      \"distinct_id\": \"d8f2a1b3-4c5e-6f7a-8b9c-0d1e2f3a4b5c\",\n      \"properties\": {\n        \"command\": \"deploy\",\n        \"duration_ms\": 1234,\n        \"$lib\": \"my-cli\",\n        \"$lib_version\": \"1.2.0\",\n        \"$insert_id\": \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\"\n      }\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [
+                {
+                  "disabled": false,
+                  "description": "Seconds to wait before retrying (includes jitter)",
+                  "key": "Retry-After",
+                  "value": "785"
+                },
+                {
+                  "disabled": false,
+                  "description": "Events remaining in current rate limit window",
+                  "key": "X-SageOx-Rate-Limit-Remaining",
+                  "value": "785"
+                },
+                {
+                  "disabled": false,
+                  "description": "Events remaining in monthly quota",
+                  "key": "X-SageOx-Quota-Remaining",
+                  "value": "785"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "ffa7fae7-3066-45ac-8840-3e4e4b732967",
+          "name": "Register a new app",
+          "request": {
+            "name": "Register a new app",
+            "description": {
+              "content": "Creates a new AgentX application and returns the API key.\n\n**The API key is shown only once in this response.** It is not retrievable\nlater via the GET endpoint. To obtain a new key, delete the app and recreate it.\n\nThe caller must be an active member of the specified team.\n\n**Default metadata:** `rate_limit: 1000/min`, `burst_limit: 5000/min`, `monthly_quota: 10M events`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                "apps"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"team_id\": \"<string>\",\n  \"title\": \"<string>\",\n  \"slug\": \"<string>\",\n  \"description\": \"<string>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "ecf7f118-8904-45e6-942c-efc08af9d692",
+              "name": "App created. API key included in response (shown once).",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"team_id\": \"team_abc123\",\n  \"title\": \"My CLI Tool\",\n  \"slug\": \"my-cli\",\n  \"description\": \"Telemetry for the my-cli command-line tool\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"app\": {\n    \"id\": \"app_01924a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b\",\n    \"team_id\": \"team_abc123\",\n    \"title\": \"My CLI Tool\",\n    \"slug\": \"my-cli\",\n    \"metadata\": {\n      \"key_0\": \"string\",\n      \"key_1\": \"string\"\n    },\n    \"created_at\": \"1983-03-24T12:28:35.750Z\",\n    \"updated_at\": \"2023-09-28T05:21:16.749Z\"\n  },\n  \"api_key\": \"axk_a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c7953434-4aa4-4bc6-a07e-85dffdd5997c",
+              "name": "Invalid request (missing fields, bad slug format)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"team_id\": \"team_abc123\",\n  \"title\": \"My CLI Tool\",\n  \"slug\": \"my-cli\",\n  \"description\": \"Telemetry for the my-cli command-line tool\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "62a2bbe3-ad2a-45e2-93da-64d4ec442e3b",
+              "name": "Not a member of the specified team",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"team_id\": \"team_abc123\",\n  \"title\": \"My CLI Tool\",\n  \"slug\": \"my-cli\",\n  \"description\": \"Telemetry for the my-cli command-line tool\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "abda10c3-102a-49aa-9365-e1069cef7dd0",
+              "name": "An app with this slug already exists for this team",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "POST",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"team_id\": \"team_abc123\",\n  \"title\": \"My CLI Tool\",\n  \"slug\": \"my-cli\",\n  \"description\": \"Telemetry for the my-cli command-line tool\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Conflict",
+              "code": 409,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "f6817cb1-2829-4a6b-a84a-1e1274f7a351",
+          "name": "List apps for a team",
+          "request": {
+            "name": "List apps for a team",
+            "description": {
+              "content": "Returns all AgentX applications registered to the specified team.\nAPI keys are never included in list responses.\n\nThe caller must be an active member of the specified team.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                "apps"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "team_id",
+                  "value": "<string>",
+                  "description": "(Required) Team ID to list apps for. Must be a valid `team_` prefixed ID."
+                }
+              ],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "11cef789-f4ca-4179-a4ca-79a990c042f0",
+              "name": "List of apps (may be empty)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"id\": \"app_01924a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b\",\n    \"team_id\": \"team_abc123\",\n    \"title\": \"My CLI Tool\",\n    \"slug\": \"my-cli\",\n    \"metadata\": {\n      \"key_0\": 9104.149726166135,\n      \"key_1\": 7174.541861079178\n    },\n    \"created_at\": \"2024-12-10T03:00:41.339Z\",\n    \"updated_at\": \"1963-04-21T16:33:13.514Z\"\n  },\n  {\n    \"id\": \"app_01924a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b\",\n    \"team_id\": \"team_abc123\",\n    \"title\": \"My CLI Tool\",\n    \"slug\": \"my-cli\",\n    \"metadata\": {\n      \"key_0\": 145,\n      \"key_1\": \"string\"\n    },\n    \"created_at\": \"1986-03-05T08:23:24.466Z\",\n    \"updated_at\": \"2025-05-07T00:29:20.373Z\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "d444193f-6f93-46e1-ba60-d9b80d54fd7f",
+              "name": "Missing or invalid team_id",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "d5837684-4beb-404a-b7b2-16aa162aa966",
+              "name": "Not a member of the specified team",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    "apps"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "team_id",
+                      "value": "team_abc123"
+                    }
+                  ],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "bd5b4a0e-a391-4155-99f9-0c99890c10e1",
+          "name": "Get app details",
+          "request": {
+            "name": "Get app details",
+            "description": {
+              "content": "Returns application details including metadata and settings.\nThe API key is **not** included — it is only shown once at creation time.\n\nRequires JWT authentication and team membership.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "313d265e-b957-4893-af93-b46eb0e9473d",
+              "name": "App details",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"id\": \"app_01924a5b-6c7d-8e9f-0a1b-2c3d4e5f6a7b\",\n  \"team_id\": \"team_abc123\",\n  \"title\": \"My CLI Tool\",\n  \"slug\": \"my-cli\",\n  \"metadata\": {\n    \"key_0\": \"string\",\n    \"key_1\": false,\n    \"key_2\": 9012.188773754051\n  },\n  \"created_at\": \"2001-04-19T09:12:42.160Z\",\n  \"updated_at\": \"2023-10-23T05:00:31.485Z\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "149d69a4-3cbd-438f-aadb-dbedc5088115",
+              "name": "App not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "271644a3-cd6c-4c1c-b317-9357334276e2",
+          "name": "Delete an app",
+          "request": {
+            "name": "Delete an app",
+            "description": {
+              "content": "Permanently deletes the application and invalidates its API key.\nAny subsequent capture requests using this key will fail with 401.\n\n**This action is irreversible.** All associated event data remains in storage\nbut is no longer queryable through the dashboard.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "34b6a890-ea06-4881-831a-bb0cdc9381e5",
+              "name": "App deleted",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "No Content",
+              "code": 204,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "6ca9e5a9-167c-4327-90eb-17de79b3e13b",
+              "name": "App not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "DELETE",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "136d2d06-cdf5-4db1-89aa-d2f34f740615",
+          "name": "Update collection settings",
+          "request": {
+            "name": "Update collection settings",
+            "description": {
+              "content": "Updates collection control settings for the app.\n\n- **`collection_enabled`**: When `false`, the capture endpoint accepts events\n  but drops them immediately — zero server-side resources consumed.\n- **`sample_rate`**: Controls what fraction of events are stored (0.0 to 1.0).\n  Events are randomly sampled before database insertion. Set to `1.0` to keep\n  all events, or lower to reduce storage for high-volume apps.\n\nSettings take effect on the next capture request (cached for up to 5 minutes\nin the API key middleware).\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "settings"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "PATCH",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"collection_enabled\": \"<boolean>\",\n  \"sample_rate\": \"<double>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [
+            {
+              "id": "a9f46db4-f058-4789-b100-9e34c522d287",
+              "name": "Updated settings",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "settings"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"collection_enabled\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"collection_enabled\": true,\n  \"sample_rate\": 1\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "58d1cc5d-1ada-483f-ae0a-2f3d76fb9e87",
+              "name": "Invalid sample_rate (must be 0.0–1.0)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "settings"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"collection_enabled\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            },
+            {
+              "id": "619b85c3-885e-4b57-bfbc-d6a8e1c0b748",
+              "name": "App not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "settings"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  }
+                ],
+                "method": "PATCH",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"collection_enabled\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "text/plain"
+                }
+              ],
+              "body": "",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "44af3037-e29f-44f2-b8f1-95eb4daa1c69",
+          "name": "Get KPI summary",
+          "request": {
+            "name": "Get KPI summary",
+            "description": {
+              "content": "Returns fast KPI data from pre-aggregated counters. Designed for dashboard\nwidgets and overview cards. Responds in <100ms.\n\nReturns events in the last 24 hours. Does not accept date range parameters.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "summary"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "656525fe-db47-4cfb-bb21-7fdf46cd7ac5",
+              "name": "KPI summary",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "summary"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"events_24h\": 5807\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "5963187c-b1a0-4a94-bb5a-41fe069e6142",
+          "name": "Get overview statistics",
+          "request": {
+            "name": "Get overview statistics",
+            "description": {
+              "content": "Returns aggregate statistics for the specified date range: total events,\nunique users, friction event count, friction rate, and latest client version.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "overview"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                },
+                {
+                  "disabled": false,
+                  "key": "tz",
+                  "value": "<string>",
+                  "description": "IANA timezone for time series bucketing. Defaults to UTC."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "906a7a87-fdf4-4530-a5fc-1dbc03ab5203",
+              "name": "Overview statistics",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "overview"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    },
+                    {
+                      "key": "tz",
+                      "value": "America/Los_Angeles"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"total_events\": 3061,\n  \"total_users\": 1303,\n  \"friction_events\": 671,\n  \"friction_rate\": 620.0825500430574,\n  \"latest_version\": \"string\"\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "4c524c26-453e-473f-8e46-430d7a6f7ff3",
+          "name": "Get event time series",
+          "request": {
+            "name": "Get event time series",
+            "description": {
+              "content": "Returns time-bucketed event counts grouped by event name.\nBuckets are hourly for ranges <= 7 days, daily for longer ranges.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "events"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "aefe510a-7fe5-4bc3-8518-339698a7f455",
+              "name": "Time series data points",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "events"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"bucket\": \"2026-03-26T14:00:00Z\",\n    \"count\": 4784,\n    \"event\": \"string\"\n  },\n  {\n    \"bucket\": \"2026-03-26T14:00:00Z\",\n    \"count\": 6712,\n    \"event\": \"string\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "225b9458-875f-4e9c-bf0c-d0ae151dd912",
+          "name": "Get friction forensics",
+          "request": {
+            "name": "Get friction forensics",
+            "description": {
+              "content": "Returns comprehensive friction analysis with selective metric loading.\nUse the `metrics` parameter to request only the sections you need — each\nmetric is fetched concurrently for optimal performance.\n\n**Available metrics:** `time_series`, `by_actor`, `by_tool`,\n`top_unknown_commands`, `agent_stats`, `client_versions`, `hotspots`,\n`recent_events`.\n\nWhen `compare=true`, includes a previous-period comparison for trend analysis.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "friction"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                },
+                {
+                  "disabled": false,
+                  "key": "tz",
+                  "value": "<string>",
+                  "description": "IANA timezone for time series bucketing. Defaults to UTC."
+                },
+                {
+                  "disabled": false,
+                  "key": "kind",
+                  "value": "<string>",
+                  "description": "Filter by friction kind"
+                },
+                {
+                  "disabled": false,
+                  "key": "metrics",
+                  "value": "<string>",
+                  "description": "Comma-separated list of metric sections to include. Omit to include all."
+                },
+                {
+                  "disabled": false,
+                  "key": "events_limit",
+                  "value": "50",
+                  "description": "Max recent events to return"
+                },
+                {
+                  "disabled": false,
+                  "key": "events_offset",
+                  "value": "0",
+                  "description": "Offset for recent events pagination"
+                },
+                {
+                  "disabled": false,
+                  "key": "compare",
+                  "value": "false",
+                  "description": "Include previous-period comparison"
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "9f9d5495-81b5-434c-88d4-3037a9335edf",
+              "name": "Friction forensics response. Sections not requested via `metrics` will be empty arrays.",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "friction"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    },
+                    {
+                      "key": "tz",
+                      "value": "America/Los_Angeles"
+                    },
+                    {
+                      "key": "kind",
+                      "value": "<string>"
+                    },
+                    {
+                      "key": "metrics",
+                      "value": "time_series,by_actor,hotspots"
+                    },
+                    {
+                      "key": "events_limit",
+                      "value": "50"
+                    },
+                    {
+                      "key": "events_offset",
+                      "value": "0"
+                    },
+                    {
+                      "key": "compare",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"time_series\": [\n    {\n      \"date\": \"string\",\n      \"kind\": \"string\",\n      \"event_count\": 8877\n    },\n    {\n      \"date\": \"string\",\n      \"kind\": \"string\",\n      \"event_count\": 8549\n    }\n  ],\n  \"by_actor\": [\n    {\n      \"actor\": \"human\",\n      \"kind\": \"string\",\n      \"event_count\": 5361\n    },\n    {\n      \"actor\": \"human\",\n      \"kind\": \"string\",\n      \"event_count\": 6640\n    }\n  ],\n  \"by_tool\": [\n    {\n      \"tool\": \"string\",\n      \"kind\": \"string\",\n      \"event_count\": 493,\n      \"unique_users\": 6220\n    },\n    {\n      \"tool\": \"string\",\n      \"kind\": \"string\",\n      \"event_count\": 5023,\n      \"unique_users\": 7527\n    }\n  ],\n  \"top_unknown_commands\": [\n    {\n      \"command\": \"string\",\n      \"input\": \"string\",\n      \"attempt_count\": 1879,\n      \"unique_users\": 4291,\n      \"last_seen\": \"2001-06-06T07:21:07.502Z\"\n    },\n    {\n      \"command\": \"string\",\n      \"input\": \"string\",\n      \"attempt_count\": 6162,\n      \"unique_users\": 279,\n      \"last_seen\": \"1972-02-27T19:58:00.874Z\"\n    }\n  ],\n  \"agent_stats\": [\n    {\n      \"agent_type\": \"string\",\n      \"total_count\": 7155,\n      \"agent_triggered\": 9123,\n      \"human_triggered\": 3869,\n      \"unique_users\": 8879\n    },\n    {\n      \"agent_type\": \"string\",\n      \"total_count\": 7564,\n      \"agent_triggered\": 426,\n      \"human_triggered\": 5896,\n      \"unique_users\": 6473\n    }\n  ],\n  \"client_versions\": [\n    {\n      \"version\": \"string\",\n      \"event_count\": 9694,\n      \"unique_kinds\": 6086,\n      \"first_seen\": \"1980-01-05T12:29:48.523Z\",\n      \"last_seen\": \"1991-12-27T16:02:09.589Z\"\n    },\n    {\n      \"version\": \"string\",\n      \"event_count\": 8762,\n      \"unique_kinds\": 6460,\n      \"first_seen\": \"1958-02-01T04:21:51.375Z\",\n      \"last_seen\": \"1990-03-27T08:40:13.870Z\"\n    }\n  ],\n  \"hotspots\": [\n    {\n      \"command\": \"string\",\n      \"subcommand\": \"string\",\n      \"kind\": \"string\",\n      \"event_count\": 5518,\n      \"affected_users\": 4673,\n      \"last_seen\": \"1996-05-08T22:49:17.369Z\"\n    },\n    {\n      \"command\": \"string\",\n      \"subcommand\": \"string\",\n      \"kind\": \"string\",\n      \"event_count\": 9769,\n      \"affected_users\": 9482,\n      \"last_seen\": \"1951-05-31T18:30:29.616Z\"\n    }\n  ],\n  \"recent_events\": [\n    {\n      \"ts\": \"2010-06-10T16:55:07.875Z\",\n      \"event\": \"string\",\n      \"distinct_id\": \"string\",\n      \"kind\": \"string\",\n      \"actor\": \"string\",\n      \"agent_type\": \"string\",\n      \"command\": \"string\",\n      \"subcommand\": \"string\",\n      \"input\": \"string\",\n      \"error_msg\": \"string\",\n      \"suggestion\": \"string\",\n      \"lib_version\": \"string\",\n      \"path_bucket\": \"string\",\n      \"total_count\": 388\n    },\n    {\n      \"ts\": \"1961-05-28T17:04:45.943Z\",\n      \"event\": \"string\",\n      \"distinct_id\": \"string\",\n      \"kind\": \"string\",\n      \"actor\": \"string\",\n      \"agent_type\": \"string\",\n      \"command\": \"string\",\n      \"subcommand\": \"string\",\n      \"input\": \"string\",\n      \"error_msg\": \"string\",\n      \"suggestion\": \"string\",\n      \"lib_version\": \"string\",\n      \"path_bucket\": \"string\",\n      \"total_count\": 475\n    }\n  ],\n  \"events_total\": 4273,\n  \"events_limit\": 2168,\n  \"events_offset\": 6090,\n  \"previous_period\": {\n    \"kind\": \"string\",\n    \"current_count\": 6180,\n    \"previous_count\": 4374\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "c3cfa748-ea69-408e-a22e-0ea3864a226e",
+          "name": "Get command usage ranking",
+          "request": {
+            "name": "Get command usage ranking",
+            "description": {
+              "content": "Returns the top 50 commands by usage count with percentage distribution.\nCommand names are extracted from `properties->>'command'` in events.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "commands"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "e004956b-4745-46aa-a7f2-77f8ad635c4b",
+              "name": "Command distribution",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "commands"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"label\": \"string\",\n    \"count\": 6891,\n    \"pct\": 5096.204538458184\n  },\n  {\n    \"label\": \"string\",\n    \"count\": 8718,\n    \"pct\": 1554.029456931868\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a12a7997-3d3f-4633-a925-59cc436444d1",
+          "name": "Get agent type distribution",
+          "request": {
+            "name": "Get agent type distribution",
+            "description": {
+              "content": "Returns event counts grouped by actor and agent type.\nLabels are formatted as `{actor}/{agent_type}` (e.g., `agent/copilot`).\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "agents"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "0e8ce70d-9506-44dc-9767-e5f3024627d7",
+              "name": "Agent distribution",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "agents"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"label\": \"string\",\n    \"count\": 6891,\n    \"pct\": 5096.204538458184\n  },\n  {\n    \"label\": \"string\",\n    \"count\": 8718,\n    \"pct\": 1554.029456931868\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "2815c8ee-09e5-4d2a-8aa7-0a3bfb4a8d58",
+          "name": "Get version adoption data",
+          "request": {
+            "name": "Get version adoption data",
+            "description": {
+              "content": "Returns daily event counts grouped by client library version\n(`properties->>'$lib_version'`). Useful for tracking version adoption curves.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "versions"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "eb4bfbc9-806d-4290-b0ac-0a226927fe71",
+              "name": "Version time series (daily buckets)",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "versions"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"bucket\": \"2026-03-26T14:00:00Z\",\n    \"count\": 4784,\n    \"event\": \"string\"\n  },\n  {\n    \"bucket\": \"2026-03-26T14:00:00Z\",\n    \"count\": 6712,\n    \"event\": \"string\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1f224dc8-c0c4-4f3e-9ce5-d8a925792a18",
+          "name": "Get daily active users",
+          "request": {
+            "name": "Get daily active users",
+            "description": {
+              "content": "Returns daily active user counts. Users are identified by\n`COALESCE(properties->>'$user_id', distinct_id)`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "users"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "20ad7948-d594-43ac-acd0-5e2a6d8003bc",
+              "name": "DAU time series",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "users"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"bucket\": \"2026-03-26T14:00:00Z\",\n    \"count\": 4784,\n    \"event\": \"string\"\n  },\n  {\n    \"bucket\": \"2026-03-26T14:00:00Z\",\n    \"count\": 6712,\n    \"event\": \"string\"\n  }\n]",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "687e9982-e8e9-476b-8921-aa7cdec18d07",
+          "name": "Export friction events as CSV",
+          "request": {
+            "name": "Export friction events as CSV",
+            "description": {
+              "content": "Streams all friction events for the date range as a CSV download.\n\n**Columns:** `ts`, `event`, `distinct_id`, `kind`, `actor`, `agent_type`,\n`command`, `subcommand`, `input`, `error_msg`, `suggestion`, `lib_version`,\n`path_bucket`, `user_id`.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "agentx",
+                ":app_id",
+                "export"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [
+                {
+                  "disabled": false,
+                  "key": "start_date",
+                  "value": "<date>",
+                  "description": "Start of date range (ISO 8601 date or datetime). Defaults to 7 days ago."
+                },
+                {
+                  "disabled": false,
+                  "key": "end_date",
+                  "value": "<date>",
+                  "description": "End of date range (ISO 8601 date or datetime). Defaults to now."
+                }
+              ],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "app_id",
+                  "description": "(Required) AgentX application ID"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "text/csv"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "1d92e219-8c12-4794-ad9c-e7e084374914",
+              "name": "CSV file download",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "agentx",
+                    ":app_id",
+                    "export"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "start_date",
+                      "value": "2026-03-19"
+                    },
+                    {
+                      "key": "end_date",
+                      "value": "2026-03-26"
+                    }
+                  ],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "app_id",
+                      "description": "(Required) AgentX application ID"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "text/csv"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "disabled": false,
+                  "key": "Content-Disposition",
+                  "value": "attachment; filename=agentx-friction-app_01234.csv",
+                  "description": ""
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "text/csv"
+                }
+              ],
+              "body": "string",
+              "cookie": [],
+              "_postman_previewlanguage": "text"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:3000",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "0b1eefed-506a-4559-844f-6c9c60d89a16",
+    "name": "SageOx Admin AgentX API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n\n\nContact Support:\n Name: SageOx Team",
+      "type": "text/plain"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Logs API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Logs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Frontend log ingestion",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/logs/frontend",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Receives a batch of structured logs from the web frontend and forwards\nthem to the backend's slog pipeline tagged with `source=frontend`. Used\nby the BFF to capture client-side errors, console warnings, and lifecycle\nevents alongside server logs.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

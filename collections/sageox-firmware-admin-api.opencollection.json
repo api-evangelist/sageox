@@ -1,0 +1,330 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Firmware Admin API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Firmware Admin",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List firmware releases",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware",
+            "params": [
+              {
+                "name": "device_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by device type. Defaults to `scribe`."
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "List all firmware releases for a device type, newest first.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Upload new firmware release",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Create a firmware release record and get a pre-signed S3 upload URL for\nthe binary. The release starts in `staged` status and must be explicitly\nactivated via the activate endpoint.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Update min_version security floor and/or rollout percentage",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware/:firmware_id",
+            "params": [
+              {
+                "name": "firmware_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Update mutable fields on a firmware release. At least one of `min_version`\nor `rollout_percent` must be supplied.\n\n- `min_version`: devices running below this floor get a forced update (no\n  skip option). Send an empty string to clear the floor.\n- `rollout_percent`: percentage of the cohort (0-100) eligible to receive\n  this release. Device IDs are hashed into a 0-99 bucket; a device is\n  served only if its bucket is below the configured percent. Use this to\n  gradually expand a release from can"
+        },
+        {
+          "info": {
+            "name": "Activate a staged firmware release",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware/:firmware_id/activate",
+            "params": [
+              {
+                "name": "firmware_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Atomically returns the current active release to `staged` and activates\nthe specified one. Only releases in `staged` status can be activated.\n\n**Rollback:** To rollback, activate any previous staged release.\nThe old active release returns to `staged`, so it can be re-activated later.\n"
+        },
+        {
+          "info": {
+            "name": "Pause a firmware release (fleet-wide kill-switch)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware/:firmware_id/pause",
+            "params": [
+              {
+                "name": "firmware_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Sets `paused_at` on the release. While paused, the manifest resolver\nreturns 204 No Content for this release even for devices in its rollout\ncohort. Independent of `rollout_percent` — pause is the kill-switch primitive.\n\nThe audit trail records `paused_by` and `pause_reason`.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Resume a paused firmware release",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware/:firmware_id/resume",
+            "params": [
+              {
+                "name": "firmware_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Clears `paused_at`, `paused_by`, and `pause_reason` on the release. The\nmanifest resolver will once again serve this release to eligible devices.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "List firmware catalog with fleet rollout signals",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware/catalog",
+            "params": [
+              {
+                "name": "device_type",
+                "value": "",
+                "type": "query",
+                "description": "Filter by hardware type (e.g. scribe). Defaults to scribe."
+              },
+              {
+                "name": "channel",
+                "value": "",
+                "type": "query",
+                "description": "Filter by release channel."
+              },
+              {
+                "name": "status",
+                "value": "",
+                "type": "query",
+                "description": "Filter by release status."
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Catalog view of firmware releases enriched with fleet-derived signals:\ndevice counts, adoption series, crash counts, and pause status. Used by\nthe HQ web console to render the fleet dashboard. Distinct from the basic\nlist endpoint because it joins against `physical_devices` and\n`device_update_events`.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Preview rollout cohort without targeting devices",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/internal/hq/firmware/:firmware_id/dryrun",
+            "params": [
+              {
+                "name": "firmware_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Evaluate a candidate cohort selector and report how many devices would\nmatch, how many are eligible (after policy/version/hardware filters), and\nwhich devices are excluded and why. Read-only — no devices are targeted.\n\nUsed by the HQ console to give operators confidence before they create a\nreal rollout.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Pin a device to a specific firmware release",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/internal/hq/devices/:device_id/firmware-target",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "",
+                "type": "path",
+                "description": "Hardware device ID (12-character lowercase hex MAC for scribe)."
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates or replaces the firmware pin for a single device. While pinned,\nthe manifest resolver serves the targeted release regardless of the\ndevice's channel — provided the device's `ota_policy` is `pinned`.\n\nPins are the primary pilot-testing primitive: bring a single rig onto\nbeta firmware without affecting the rest of the fleet.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Remove a device firmware pin",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/internal/hq/devices/:device_id/firmware-target",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes the pin for a device. The device returns to channel-based\nresolution. Note this does not change `ota_policy`; if the device is\nstill in `pinned` policy with no pin, the resolver returns 204\n(intentional: prevents accidental re-targeting onto the channel).\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Get the OTA policy for a device",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/internal/hq/devices/:device_id/ota-policy",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the device's OTA policy plus optional firmware pin (when policy is\n`pinned`). Precedence in the resolver: `disabled` > `pinned` > `auto`.\n\n**Auth:** JWT + HQ admin only.\n"
+        },
+        {
+          "info": {
+            "name": "Set the OTA policy for a device",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/internal/hq/devices/:device_id/ota-policy",
+            "params": [
+              {
+                "name": "device_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Set `ota_policy` to `auto`, `pinned`, or `disabled` for a single device.\nRecords `set_by` and `set_at` for the audit trail.\n\nSwitching to `pinned` does NOT create a pin — call PUT\n`/devices/{device_id}/firmware-target` separately. Until a pin exists,\na `pinned` device receives 204 from the manifest resolver.\n\nSwitching to `disabled` is the strongest signal: the resolver returns 204\nunconditionally. Used for engineering rigs and devices flashed manually.\n\n**Auth:** JWT + HQ admin only.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

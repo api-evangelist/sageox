@@ -1,0 +1,69 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin API Keys API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "API Keys",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List API keys",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/api-keys"
+          },
+          "docs": "Returns all active (non-revoked) API keys for the authenticated user.\nFull key values are never returned - only the prefix (first 8 chars) for\nidentification, creation date, and usage information.\n"
+        },
+        {
+          "info": {
+            "name": "Create API key",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/api-keys",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a new API key for the authenticated user. The full key is returned\nonly once and must be stored securely. The key can be used for API\nauthentication via Bearer token. Optionally specify an expiration period.\n"
+        },
+        {
+          "info": {
+            "name": "Revoke API key",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/api-keys/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "API key UUID to revoke"
+              }
+            ]
+          },
+          "docs": "Revokes (soft-deletes) an API key. The key cannot be used for authentication\nafter revocation. Revocation is permanent and cannot be undone.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

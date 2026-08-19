@@ -1,0 +1,65 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Guidance API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Guidance",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get root guidance content",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/guidance/"
+          },
+          "docs": "Returns guidance content for the root path.\nUsed to bootstrap guided experiences and progressive disclosure.\n\n**Progressive disclosure:** Guidance is tiered based on user context:\n- Unauthenticated: Limited guidance, 60 req/min\n- Authenticated: Full guidance, 300 req/min\n\n**Authentication:** Optional (tiered rate limiting based on auth status)\n**Rate limit:** Tiered (60 req/min unauthenticated, 300 req/min authenticated)\n"
+        },
+        {
+          "info": {
+            "name": "Get path-based guidance",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/guidance/:path",
+            "params": [
+              {
+                "name": "path",
+                "value": "getting-started/setup",
+                "type": "path",
+                "description": "Guidance path (supports nested paths with slashes)"
+              }
+            ]
+          },
+          "docs": "Returns guidance content for a specific path (wildcard route).\nSupports nested paths for progressive disclosure.\n\n**Path examples:**\n- `/api/v1/guidance/getting-started`\n- `/api/v1/guidance/repos/setup`\n- `/api/v1/guidance/teams/collaboration`\n\n**Progressive disclosure:** Content adjusted based on user tier and context\n\n**Authentication:** Optional (tiered rate limiting)\n**Rate limit:** Tiered (60 req/min unauthenticated, 300 req/min authenticated)\n"
+        },
+        {
+          "info": {
+            "name": "Get user guidance statistics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/guidance/my-stats"
+          },
+          "docs": "Returns guidance-related statistics for the authenticated user.\nTracks progress, visited topics, and engagement metrics.\n\n**Statistics tracked:**\n- Topics visited\n- Guidance completion percentage\n- Recommended next steps based on usage\n\n**Authentication:** Bearer token required\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

@@ -1,0 +1,770 @@
+{
+  "item": [
+    {
+      "id": "d2da9baf-5cc9-4104-949b-438686aa145d",
+      "name": "Admin",
+      "description": {
+        "content": "Administrative analytics, session management, and system operations. Includes active session counts, user analytics, and management endpoints restricted to admin roles.\n",
+        "type": "text/plain"
+      },
+      "item": [
+        {
+          "id": "8f76fd0c-f93c-4890-a2d8-3b18e6711a6b",
+          "name": "Get top sessions by token usage",
+          "request": {
+            "name": "Get top sessions by token usage",
+            "description": {
+              "content": "Returns the top 5 sessions ranked by total token consumption\nin the last 7 days. Sessions are grouped by ox_sid and include\nagent/model metadata.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "sessions",
+                "top"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "94dc578d-4be1-4ae9-9c36-d9646af21829",
+              "name": "Top sessions retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sessions",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"sessions\": [\n    {\n      \"ox_sid\": \"oxsid_abc123xyz\",\n      \"total_tokens\": 12450,\n      \"path_count\": 23,\n      \"duration_seconds\": 272,\n      \"first_access\": \"1992-02-22T06:02:32.949Z\",\n      \"last_access\": \"1972-06-14T18:01:58.690Z\",\n      \"agent\": \"claude-code\",\n      \"model\": \"claude-opus-4-5\"\n    },\n    {\n      \"ox_sid\": \"oxsid_abc123xyz\",\n      \"total_tokens\": 12450,\n      \"path_count\": 23,\n      \"duration_seconds\": 272,\n      \"first_access\": \"1966-02-27T17:49:35.843Z\",\n      \"last_access\": \"2001-09-01T20:46:09.523Z\",\n      \"agent\": \"claude-code\",\n      \"model\": \"claude-opus-4-5\"\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "c5b908a0-2436-403d-885d-ec8f9ed03487",
+              "name": "Authentication required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sessions",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "98bb4bda-0448-4725-b530-185b0a7c558b",
+              "name": "Admin access required",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sessions",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Forbidden",
+              "code": 403,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "1b5bb25b-2e2d-4038-860e-34fab01a2ec1",
+          "name": "Get session details",
+          "request": {
+            "name": "Get session details",
+            "description": {
+              "content": "Returns detailed analytics for a specific session including\ntimeline of accesses, path exploration tree, and metadata.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "sessions",
+                ":sid"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": [
+                {
+                  "disabled": false,
+                  "type": "any",
+                  "value": "<string>",
+                  "key": "sid",
+                  "description": "(Required) Session ID (ox_sid)"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c1a7a7d8-8cbd-42b0-b732-3bb64a5d09bd",
+              "name": "Session details retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sessions",
+                    ":sid"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "sid",
+                      "description": "(Required) Session ID (ox_sid)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"ox_sid\": \"string\",\n  \"user_id\": \"string\",\n  \"total_tokens\": 1214,\n  \"path_count\": 3139,\n  \"unique_paths\": 1714,\n  \"duration_seconds\": 388,\n  \"agent\": \"string\",\n  \"model\": \"string\",\n  \"first_access\": \"1954-01-15T05:02:36.766Z\",\n  \"last_access\": \"1949-03-17T16:18:09.188Z\",\n  \"timeline\": [\n    {\n      \"path\": \"infra/aws/lambda\",\n      \"tokens\": 450,\n      \"timestamp\": \"1990-08-06T13:14:39.028Z\",\n      \"metadata\": {\n        \"key_0\": 6583.499086683788,\n        \"key_1\": true\n      }\n    },\n    {\n      \"path\": \"infra/aws/lambda\",\n      \"tokens\": 450,\n      \"timestamp\": \"2019-08-15T05:28:52.981Z\",\n      \"metadata\": {\n        \"key_0\": 740,\n        \"key_1\": true\n      }\n    }\n  ],\n  \"path_tree\": [\n    {\n      \"path\": \"string\",\n      \"segment\": \"string\",\n      \"tokens\": 7302,\n      \"access_count\": 7475,\n      \"children\": [\n        {\n          \"path\": \"string\",\n          \"segment\": \"string\",\n          \"tokens\": 1338,\n          \"access_count\": 2449,\n          \"children\": [\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            },\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            }\n          ]\n        },\n        {\n          \"path\": \"string\",\n          \"segment\": \"string\",\n          \"tokens\": 5261,\n          \"access_count\": 8030,\n          \"children\": [\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            },\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            }\n          ]\n        }\n      ]\n    },\n    {\n      \"path\": \"string\",\n      \"segment\": \"string\",\n      \"tokens\": 6308,\n      \"access_count\": 4859,\n      \"children\": [\n        {\n          \"path\": \"string\",\n          \"segment\": \"string\",\n          \"tokens\": 2701,\n          \"access_count\": 9173,\n          \"children\": [\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            },\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            }\n          ]\n        },\n        {\n          \"path\": \"string\",\n          \"segment\": \"string\",\n          \"tokens\": 7881,\n          \"access_count\": 499,\n          \"children\": [\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            },\n            {\n              \"value\": \"<Circular reference to #/paths/~1api~1v1~1admin~1sessions~1%7Bsid%7D/get/responses/200/content/application~1json/schema/properties/path_tree/items detected>\"\n            }\n          ]\n        }\n      ]\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            },
+            {
+              "id": "ed33d053-5ffa-4f5e-96e7-001d98c4f7b2",
+              "name": "Session not found",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sessions",
+                    ":sid"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": [
+                    {
+                      "disabled": false,
+                      "type": "any",
+                      "value": "<string>",
+                      "key": "sid",
+                      "description": "(Required) Session ID (ox_sid)"
+                    }
+                  ]
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"error\": {\n    \"code\": \"string\",\n    \"message\": \"string\"\n  }\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "da296129-30fe-42a1-89e8-7b0e54494d66",
+          "name": "Get top paths by TF-IDF score",
+          "request": {
+            "name": "Get top paths by TF-IDF score",
+            "description": {
+              "content": "Returns the top 10 guidance paths weighted by TF-IDF score.\nThis highlights paths that are unexpectedly popular relative\nto their baseline expectation (deeper paths get a bonus).\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "paths",
+                "top"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "75afbfe0-2db4-4789-8bfe-a536fa49d875",
+              "name": "Top paths retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "paths",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"paths\": [\n    {\n      \"path\": \"infra/aws/lambda/edge-functions\",\n      \"access_count\": 42,\n      \"unique_sessions\": 15,\n      \"total_tokens\": 8500,\n      \"tfidf_score\": 12.45\n    },\n    {\n      \"path\": \"infra/aws/lambda/edge-functions\",\n      \"access_count\": 42,\n      \"unique_sessions\": 15,\n      \"total_tokens\": 8500,\n      \"tfidf_score\": 12.45\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a106985c-69b9-4736-8288-465995aa9ac2",
+          "name": "Get top agents by usage",
+          "request": {
+            "name": "Get top agents by usage",
+            "description": {
+              "content": "Returns top coding agents (claude-code, cursor, windsurf, etc.)\nranked by total token usage in the last 7 days.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "agents",
+                "top"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "c2e4deb9-6a8b-48d5-9889-6a0c4ef47a95",
+              "name": "Top agents retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "agents",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"agents\": [\n    {\n      \"agent\": \"claude-code\",\n      \"session_count\": 150,\n      \"request_count\": 3200,\n      \"total_tokens\": 450000,\n      \"avg_tokens_per_request\": 140\n    },\n    {\n      \"agent\": \"claude-code\",\n      \"session_count\": 150,\n      \"request_count\": 3200,\n      \"total_tokens\": 450000,\n      \"avg_tokens_per_request\": 140\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "8227ead1-993e-4a98-8bd4-a3d9c541696d",
+          "name": "Get top models by usage",
+          "request": {
+            "name": "Get top models by usage",
+            "description": {
+              "content": "Returns top AI models (claude-opus-4-5, gpt-4o, etc.)\nranked by total token usage in the last 7 days.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "models",
+                "top"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "4ec336d5-6f64-4f3b-9443-e0bbdec1fc3f",
+              "name": "Top models retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "models",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"models\": [\n    {\n      \"model\": \"claude-opus-4-5\",\n      \"session_count\": 120,\n      \"request_count\": 2800,\n      \"total_tokens\": 380000,\n      \"avg_tokens_per_request\": 135\n    },\n    {\n      \"model\": \"claude-opus-4-5\",\n      \"session_count\": 120,\n      \"request_count\": 2800,\n      \"total_tokens\": 380000,\n      \"avg_tokens_per_request\": 135\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        },
+        {
+          "id": "a19c5a0b-d9fa-4f53-8ca3-b4c4f92215e3",
+          "name": "Get top ox-cli versions by usage",
+          "request": {
+            "name": "Get top ox-cli versions by usage",
+            "description": {
+              "content": "Returns top ox-cli versions ranked by total token usage\nin the last 7 days. Version is parsed from User-Agent header.\n",
+              "type": "text/plain"
+            },
+            "url": {
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "versions",
+                "top"
+              ],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "query": [],
+              "variable": []
+            },
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{bearerToken}}"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "id": "094b81ad-7d70-44b4-8a5c-3f302d59071c",
+              "name": "Top CLI versions retrieved successfully",
+              "originalRequest": {
+                "url": {
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "versions",
+                    "top"
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "header": [
+                  {
+                    "description": {
+                      "content": "Added as a part of security scheme: bearer",
+                      "type": "text/plain"
+                    },
+                    "key": "Authorization",
+                    "value": "Bearer <token>"
+                  },
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "method": "GET",
+                "body": {}
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"versions\": [\n    {\n      \"client_version\": \"1.2.3\",\n      \"session_count\": 85,\n      \"request_count\": 1900,\n      \"total_tokens\": 280000,\n      \"avg_tokens_per_request\": 147\n    },\n    {\n      \"client_version\": \"1.2.3\",\n      \"session_count\": 85,\n      \"request_count\": 1900,\n      \"total_tokens\": 280000,\n      \"avg_tokens_per_request\": 147\n    }\n  ]\n}",
+              "cookie": [],
+              "_postman_previewlanguage": "json"
+            }
+          ],
+          "event": [],
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          }
+        }
+      ],
+      "event": []
+    }
+  ],
+  "event": [],
+  "variable": [
+    {
+      "type": "string",
+      "value": "http://localhost:3000",
+      "key": "baseUrl"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{bearerToken}}"
+      }
+    ]
+  },
+  "info": {
+    "_postman_id": "a6a278d2-a3b1-4c88-9af7-3a5a02e85ee6",
+    "name": "SageOx Admin API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": {
+      "content": "# API Reference\n\n## Overview\n\nSageOx is a platform that captures team knowledge from discussions, decisions, and work context into a Ledger (per-repo historical record) and Team Context (team-wide shared knowledge). The SageOx API provides programmatic access to manage repositories, recordings, notifications, and team data with high performance and reliability.\n\n## Base URLs\n\n| Environment | URL |\n|---|---|\n| Local Development | `http://localhost:3000` |\n| Test | `https://test.sageox.ai` |\n| Production | `https://sageox.ai` |\n\n## Authentication\n\nAll requests to the SageOx API require authentication via JWT tokens issued by the Better Auth service.\n\nInclude your token in the `Authorization` header:\n```\nAuthorization: Bearer <token>\n```\n\n**Initial Auth Flow (CLI)**\n- CLI initiates device flow to obtain initial credentials\n- Exchange device code for JWT token\n- Store token securely for subsequent API requests\n- Refresh token when expired\n\n**Authenticated Endpoints**\n- Pass JWT in `Authorization: Bearer <token>` header\n- Tokens contain user identity and team membership\n- Invalid or expired tokens return 401 Unauthorized\n\n## Response Format\n\n### Success\nStandard response format with optional pagination metadata:\n```json\n{\n  \"success\": true,\n  \"data\": { ... }\n}\n```\n\n### Error\nAll errors follow a consistent format:\n```json\n{\n  \"success\": false,\n  \"error\": \"Human-readable error description\"\n}\n```\n\n**Status Codes**\n- `400` — Bad Request: Invalid parameters or malformed request\n- `401` — Unauthorized: Missing or invalid authentication token\n- `403` — Forbidden: Insufficient permissions for this resource\n- `404` — Not Found: Resource does not exist\n- `409` — Conflict: Request conflicts with current state (e.g., duplicate)\n- `429` — Rate Limited: Too many requests; retry with backoff\n- `500` — Internal Error: Server error; contact support if persistent\n\n## Pagination\n\nList endpoints support cursor-based pagination via query parameters:\n\n**Query Parameters**\n- `limit` — Number of results per page (default: 20, max: 100)\n- `offset` — Number of results to skip (default: 0)\n\n**Response Metadata**\nList responses include pagination info:\n```json\n{\n  \"success\": true,\n  \"data\": [ ... ],\n  \"meta\": {\n    \"total\": 150,\n    \"limit\": 20,\n    \"offset\": 0,\n    \"hasMore\": true\n  }\n}\n```\n\n## ID Formats\n\nResources use standardized ID formats for easy identification:\n\n| Resource | Format | Length | Example |\n|---|---|---|---|\n| Team | `team_<cuid2>` | 10 chars | `team_abc1234567` |\n| User | `usr_<cuid2>` | 10 chars | `usr_xyz9876543` |\n| Repository | `repo_<uuidv7>` | 36 chars | `repo_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Recording | `rec_<uuidv7>` | 36 chars | `rec_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Image | `img_<uuidv7>` | 36 chars | `img_01934f5a-8b9c-7def-abcd-0123456789ab` |\n| Notification | `notif_<cuid2>` | 14 chars | `notif_ab1cd2ef3g` |\n\nUse these IDs for all API operations. IDs are unique across environments.\n\n## Rate Limiting\n\nThe API applies rate limiting to protect against abuse and ensure fair access:\n\n**Authenticated Endpoints**\n- Limited per user: depends on subscription tier\n- Quota resets hourly\n\n**Unauthenticated Endpoints**\n- Limited per IP address\n- More restrictive than authenticated limits\n\nWhen rate limited, the API returns `429 Too Many Requests`. Retry requests with exponential backoff:\n```\nwait = min(2^attempt * 100ms, 10s)\n```\n\n## Timestamps\n\nAll timestamps in API responses use RFC 3339 / ISO 8601 format in UTC:\n```\n2025-12-03T10:30:00Z\n```\n\nUse this format when providing timestamps in requests as well. The API rejects timestamps in other formats.\n\n## SDKs & Tools\n\n- **OpenAPI Spec** — Full schema available at `/api/openapi.json`\n- **Postman Collection** — Import from `/api/postman.json` for interactive exploration\n- **CLI** — Use `ox` CLI for command-line access\n\n\nContact Support:\n Name: SageOx Team",
+      "type": "text/plain"
+    }
+  }
+}

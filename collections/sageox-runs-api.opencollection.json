@@ -1,0 +1,213 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin runs API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "runs",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Prepare a new terraform run",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/runs/prepare",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Initialize a run before streaming terraform apply events.\n\nThis endpoint creates a pending run that is ready to receive JSONL events from a terraform apply.\nOnce created, the CLI streams terraform output to `/api/v1/runs/{run_id}/events` and calls\n`/api/v1/runs/{run_id}/complete` when terraform finishes.\n\n**Required sequence:**\n1. Call `/runs/prepare` to create run\n2. Stream events via `/runs/{run_id}/events`\n3. Call `/runs/{run_id}/complete` with exit code\n\nSee [ADR-012](https://github.com/sage"
+        },
+        {
+          "info": {
+            "name": "Stream terraform apply events",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/runs/:run_id/events",
+            "params": [
+              {
+                "name": "run_id",
+                "value": "",
+                "type": "path",
+                "description": "UUIDv7 run identifier from `/runs/prepare`"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Stream terraform apply JSONL events. Connection stays open until terraform completes or disconnects.\n\n**Event Format:**\nSend terraform output as newline-delimited JSON (NDJSON). Each line is a single Terraform event.\n\nExample events:\n```\n{\"@level\":\"info\",\"type\":\"apply_start\",\"@timestamp\":\"2025-01-01T00:00:00Z\"}\n{\"@level\":\"info\",\"type\":\"apply_progress\",\"hook\":{\"resource\":{\"addr\":\"aws_s3_bucket.main\"},\"action\":\"create\"}}\n{\"@level\":\"info\",\"type\":\"apply_complete\",\"changes\":{\"add\":3,\"change\":0,\"remov"
+        },
+        {
+          "info": {
+            "name": "Complete a terraform run",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/runs/:run_id/complete",
+            "params": [
+              {
+                "name": "run_id",
+                "value": "",
+                "type": "path",
+                "description": "UUIDv7 run identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Signal terraform apply has finished (success or failure).\n\n**CLI Sequence (before calling this endpoint):**\n1. Terraform apply exits (with exit code 0 or non-zero)\n2. CLI writes all events to local `apply.jsonl` file (via streaming from terraform)\n3. CLI commits `apply.jsonl` to git repository\n4. CLI pushes commit to remote\n5. CLI calls this endpoint with exit code and commit SHA\n\n**Important:** CLI MUST commit and push `apply.jsonl` even on failure.\nFailed runs need logs for debugging and analy"
+        },
+        {
+          "info": {
+            "name": "Get run status and resources",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/runs/:run_id",
+            "params": [
+              {
+                "name": "run_id",
+                "value": "",
+                "type": "path",
+                "description": "UUIDv7 run identifier"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieve run status and resource states. Frontend polls this endpoint to display progress.\n\n**Response includes:**\n- Run metadata (workspace, status, timestamps)\n- `metadata` object with resource counts, git commit, and timing info\n- `resources` array with per-resource status and duration\n\n**Frontend polling (from ADR-012):**\n```typescript\n// Poll every 2 seconds while running\nconst { data: run } = useQuery({\n  queryKey: ['run', runId],\n  queryFn: () => fetchRun(runId),\n  refetchInterval: (query"
+        },
+        {
+          "info": {
+            "name": "Initialize new run (deprecated)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/env/:env_id/run/init",
+            "params": [
+              {
+                "name": "env_id",
+                "value": "",
+                "type": "path",
+                "description": "Environment identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "DEPRECATED: Use `POST /api/v1/runs/prepare` instead.\n\nCreates a new run for the specified environment with infrastructure files.\nThis endpoint is maintained for backwards compatibility only.\n"
+        },
+        {
+          "info": {
+            "name": "Update run with step data (deprecated)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/env/:env_id/run/:run_id",
+            "params": [
+              {
+                "name": "env_id",
+                "value": "",
+                "type": "path",
+                "description": "Environment identifier"
+              },
+              {
+                "name": "run_id",
+                "value": "",
+                "type": "path",
+                "description": "Run identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "DEPRECATED: Use `POST /api/v1/runs/{run_id}/events` for streaming instead.\n\nUpdates an existing run with data from a specific step.\nThis endpoint is maintained for backwards compatibility only.\n"
+        },
+        {
+          "info": {
+            "name": "Complete or fail run (deprecated)",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/env/:env_id/run/:run_id/status",
+            "params": [
+              {
+                "name": "env_id",
+                "value": "",
+                "type": "path",
+                "description": "Environment identifier"
+              },
+              {
+                "name": "run_id",
+                "value": "",
+                "type": "path",
+                "description": "Run identifier"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "DEPRECATED: Use `POST /api/v1/runs/{run_id}/complete` instead.\n\nMarks a run as completed or failed with an optional message.\nThis endpoint is maintained for backwards compatibility only.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

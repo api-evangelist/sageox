@@ -1,0 +1,360 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Photos API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Photos",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List photos in a repository",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/photos",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID (repo_<uuidv7>)"
+              },
+              {
+                "name": "recording_id",
+                "value": "",
+                "type": "query",
+                "description": "Filter photos by recording ID"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of photos to return (default 50, max 100)"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of photos to skip for pagination (default 0)"
+              }
+            ]
+          },
+          "docs": "Retrieves a paginated list of photos in a repository.\nSupports optional filtering by recording ID.\n"
+        },
+        {
+          "info": {
+            "name": "Request upload URL for a photo",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/photos",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID (repo_<uuidv7>)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Generates a presigned URL for uploading a photo to a repository.\n\nThe returned URL can be used to directly upload an image file.\nAfter successful upload, call POST /api/v1/repos/{repo_id}/photos/{img_id}\nto create the photo metadata record.\n\nSupported image types: JPEG, PNG, GIF, WebP, SVG, HEIC, HEIF, TIFF\n"
+        },
+        {
+          "info": {
+            "name": "Get photo details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/photos/:img_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID (repo_<uuidv7>)"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID (img_<uuidv7>)"
+              }
+            ]
+          },
+          "docs": "Retrieves a photo by ID, including metadata, download URL, and OCR text\nif available.\n"
+        },
+        {
+          "info": {
+            "name": "Create photo metadata after upload",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/photos/:img_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID (repo_<uuidv7>)"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID returned from upload URL request (img_<uuidv7>)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a photo metadata record after the image file has been uploaded\nvia the presigned URL from POST /api/v1/repos/{repo_id}/photos.\n\nThis endpoint finalizes the photo creation, allowing you to add metadata\nsuch as title, description, and metadata. If OCR is enabled, processing\nis triggered asynchronously.\n"
+        },
+        {
+          "info": {
+            "name": "Update photo metadata",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/photos/:img_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID (repo_<uuidv7>)"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID (img_<uuidv7>)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates photo metadata such as filename, custom metadata, or recording association.\nPartial updates are supported - only provided fields are modified.\n"
+        },
+        {
+          "info": {
+            "name": "Delete a photo",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/repos/:repo_id/photos/:img_id",
+            "params": [
+              {
+                "name": "repo_id",
+                "value": "",
+                "type": "path",
+                "description": "Repository ID (repo_<uuidv7>)"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID (img_<uuidv7>)"
+              }
+            ]
+          },
+          "docs": "Deletes a photo and its associated data from the repository.\nThis operation is permanent.\n"
+        },
+        {
+          "info": {
+            "name": "List photos in a team",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/photos",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID"
+              },
+              {
+                "name": "recording_id",
+                "value": "",
+                "type": "query",
+                "description": "Filter photos by recording ID"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of photos to return (default 50, max 100)"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of photos to skip for pagination (default 0)"
+              }
+            ]
+          },
+          "docs": "Retrieves a paginated list of photos in a team.\nSupports optional filtering by recording ID.\n"
+        },
+        {
+          "info": {
+            "name": "Request upload URL for a team photo",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/photos",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Generates a presigned URL for uploading a photo to a team.\n\nThe returned URL can be used to directly upload an image file.\nAfter successful upload, call POST /api/v1/teams/{team_id}/photos/{img_id}\nto create the photo metadata record.\n\nSupported image types: JPEG, PNG, GIF, WebP, SVG, HEIC, HEIF, TIFF\n"
+        },
+        {
+          "info": {
+            "name": "Get team photo details",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/photos/:img_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID (img_<uuidv7>)"
+              }
+            ]
+          },
+          "docs": "Retrieves a team photo by ID, including metadata, download URL, and OCR text\nif available.\n"
+        },
+        {
+          "info": {
+            "name": "Create team photo metadata after upload",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/photos/:img_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID returned from upload URL request (img_<uuidv7>)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Creates a photo metadata record after the image file has been uploaded\nvia the presigned URL from POST /api/v1/teams/{team_id}/photos.\n\nThis endpoint finalizes the photo creation, allowing you to add metadata\nsuch as title, description, and recording association. If OCR is enabled,\nprocessing is triggered asynchronously.\n"
+        },
+        {
+          "info": {
+            "name": "Update team photo metadata",
+            "type": "http"
+          },
+          "http": {
+            "method": "PATCH",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/photos/:img_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID (img_<uuidv7>)"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates team photo metadata such as filename, custom metadata, or recording association.\nPartial updates are supported - only provided fields are modified.\n"
+        },
+        {
+          "info": {
+            "name": "Delete a team photo",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/teams/:team_id/photos/:img_id",
+            "params": [
+              {
+                "name": "team_id",
+                "value": "",
+                "type": "path",
+                "description": "Team ID"
+              },
+              {
+                "name": "img_id",
+                "value": "",
+                "type": "path",
+                "description": "Image ID (img_<uuidv7>)"
+              }
+            ]
+          },
+          "docs": "Deletes a team photo and its associated data.\nThis operation is permanent.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

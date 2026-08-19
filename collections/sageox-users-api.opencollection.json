@@ -1,0 +1,148 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Users API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Users",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Get current user profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/users/me"
+          },
+          "docs": "Retrieves the authenticated user's profile including name, email, avatar,\ntier, ownership counts, and subscription status.\n"
+        },
+        {
+          "info": {
+            "name": "Update user profile",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/users/me",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Updates the authenticated user's profile. Only name and avatar_url can be\nmodified. Email changes require verification flow and are rejected here.\n"
+        },
+        {
+          "info": {
+            "name": "Initiate account deletion",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/users/me"
+          },
+          "docs": "Soft-deletes the user account with a 30-day grace period. User must not be\nthe sole owner of any teams or organizations. After deletion, the account can\nbe recovered by calling POST /api/v1/users/me/cancel-deletion within 30 days.\n"
+        },
+        {
+          "info": {
+            "name": "Cancel account deletion",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/users/me/cancel-deletion"
+          },
+          "docs": "Cancels a pending account deletion during the 30-day grace period.\nIf no deletion is pending, returns 400 Bad Request.\n"
+        },
+        {
+          "info": {
+            "name": "Export user data (GDPR)",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/users/me/export"
+          },
+          "docs": "Exports all user data in JSON format for GDPR compliance. Returns a\ncomprehensive archive of the user's profile, preferences, and associated data.\nThe response includes a Content-Disposition header for download.\n"
+        },
+        {
+          "info": {
+            "name": "Upload user avatar",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/users/me/avatar",
+            "body": {
+              "type": "multipart-form",
+              "data": [
+                {
+                  "name": "avatar",
+                  "type": "text",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "docs": "Uploads a user avatar image. Accepts JPEG, PNG, or WebP files up to 5MB.\nImage is automatically resized to 256x256 and stored. Returns the URL of\nthe stored avatar.\n"
+        },
+        {
+          "info": {
+            "name": "List adoptable repositories",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/users/me/adoptable-repos"
+          },
+          "docs": "Returns repositories that were created with the user's email address but\nare not yet linked to their account. These are repositories potentially\ncreated before the user had a SageOx account. Note: Git email can be forged,\nso these are \"potential\" matches only - verify before claiming.\n"
+        },
+        {
+          "info": {
+            "name": "Subscribe to newsletter",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/users/me/newsletter/subscribe"
+          },
+          "docs": "Subscribes the authenticated user to the SageOx newsletter.\nUpdates the user's newsletter subscription preference.\n"
+        },
+        {
+          "info": {
+            "name": "Get newsletter subscription status",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/users/me/newsletter"
+          },
+          "docs": "Returns the authenticated user's newsletter subscription status.\n"
+        },
+        {
+          "info": {
+            "name": "Get onboarding progress",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/users/me/onboarding"
+          },
+          "docs": "Returns the authenticated user's onboarding step completion status.\nIndicates which key steps (team creation, repo initialization, recording)\nhave been completed.\n"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

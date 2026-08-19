@@ -1,0 +1,336 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "SageOx Admin Notifications API",
+    "version": "1.0.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Notifications",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List notifications",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of notifications to return"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of notifications to skip for pagination"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieves paginated list of notifications for the authenticated user"
+        },
+        {
+          "info": {
+            "name": "Create notification",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/notifications",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Creates a new notification for the authenticated user"
+        },
+        {
+          "info": {
+            "name": "Delete notification",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/notifications/:id",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Notification ID"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes a specific notification for the authenticated user"
+        },
+        {
+          "info": {
+            "name": "Mark notification as read or unread",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/notifications/:id/read",
+            "params": [
+              {
+                "name": "id",
+                "value": "",
+                "type": "path",
+                "description": "Notification ID"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the read status of a specific notification"
+        },
+        {
+          "info": {
+            "name": "Server-Sent Events stream for real-time notifications",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications/stream",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Establishes a persistent SSE connection to receive real-time notification updates"
+        },
+        {
+          "info": {
+            "name": "Get notification statistics",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications/stats",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns aggregated statistics about user notifications including totals, unread counts, and breakdowns by type and priority"
+        },
+        {
+          "info": {
+            "name": "Mark all notifications as read",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/notifications/read-all",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Marks all notifications for the authenticated user as read in a single operation"
+        },
+        {
+          "info": {
+            "name": "Get grouped notifications",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications/grouped",
+            "params": [
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of notification groups to return"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of notification groups to skip for pagination"
+              },
+              {
+                "name": "lookback_hours",
+                "value": "",
+                "type": "query",
+                "description": "Number of hours to look back for notifications (default 168 for 7 days)"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieves notifications grouped by type and source for compact display"
+        },
+        {
+          "info": {
+            "name": "Get notification group items",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications/group-items",
+            "params": [
+              {
+                "name": "type",
+                "value": "",
+                "type": "query",
+                "description": "Notification type to fetch items for"
+              },
+              {
+                "name": "source_type",
+                "value": "",
+                "type": "query",
+                "description": "Optional source type filter"
+              },
+              {
+                "name": "source_id",
+                "value": "",
+                "type": "query",
+                "description": "Optional source ID filter"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query",
+                "description": "Maximum number of items to return"
+              },
+              {
+                "name": "offset",
+                "value": "",
+                "type": "query",
+                "description": "Number of items to skip for pagination"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieves all individual notifications for a specific notification group (used for expanding/drilling into a group)"
+        },
+        {
+          "info": {
+            "name": "Bulk delete notifications",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/notifications/bulk",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Deletes multiple notifications identified by their IDs in a single operation"
+        },
+        {
+          "info": {
+            "name": "Get notification preferences",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications/preferences",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Retrieves comprehensive notification preferences for the authenticated user including per-channel and per-type settings"
+        },
+        {
+          "info": {
+            "name": "Update notification preferences",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/notifications/preferences",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates notification preferences for channels and/or specific notification types"
+        },
+        {
+          "info": {
+            "name": "Get master notification toggles",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/notifications/preferences/master",
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Returns the master enable/disable toggles for each notification channel"
+        },
+        {
+          "info": {
+            "name": "Update master notification toggles",
+            "type": "http"
+          },
+          "http": {
+            "method": "PUT",
+            "url": "http://localhost:3000/api/v1/notifications/preferences/master",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            },
+            "auth": {
+              "type": "bearer",
+              "token": "{{bearerToken}}"
+            }
+          },
+          "docs": "Updates the master enable/disable toggles for notification channels. Only provided fields are updated."
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
