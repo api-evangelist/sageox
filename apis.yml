@@ -9,6 +9,17 @@ x-backed-by:
 - canaan-partners
 x-tier: stub
 x-tier-reason: portfolio-lead
+deliveryModel:
+  model: unknown
+  open_source: false
+  commercial: false
+  callable_host: true
+  label: Delivery model not determined — needs a product licence on record
+  confidence: low
+  source:
+  - openapi
+  generated: '2026-08-28'
+  method: derived
 specificationVersion: '0.23'
 created: '2026-07-17'
 modified: '2026-07-17'
