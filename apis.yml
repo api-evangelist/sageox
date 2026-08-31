@@ -252,7 +252,7 @@ apis:
   name: Sageox runs API
   description: The runs API from Sageox — 7 operation(s) for runs.
   tags:
-  - Runs
+  - runs
   tags_raw:
   - runs
   properties:
