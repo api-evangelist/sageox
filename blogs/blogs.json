@@ -6,9 +6,10 @@
       "feed_url": "https://sageox.ai/docs",
       "title": "",
       "saved": 0,
-      "method": "none"
+      "method": "none",
+      "error": "parse_failed"
     }
   ],
   "post_count": 0,
-  "fetched": "2026-09-06T18:58:10Z"
+  "fetched": "2026-09-13T12:41:53Z"
 }
