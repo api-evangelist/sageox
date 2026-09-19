@@ -240,6 +240,8 @@ apis:
     AI-generated summaries, decisions, and action items. Recordings feed into the repository Ledger. Supports
     both audio upload and real-time recording sessions via Temporal workflows.
   tags:
+  - Recording
+  tags_raw:
   - Recordings
   properties:
   - type: OpenAPI
