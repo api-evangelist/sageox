@@ -1,0 +1,1 @@
+{"resource":"https://sageox.ai/mcp","authorization_servers":["https://sageox.ai"],"scopes_supported":["openid","profile","email","offline_access"],"bearer_methods_supported":["header"]}

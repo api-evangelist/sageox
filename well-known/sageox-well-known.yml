@@ -1,20 +1,45 @@
-generated: '2026-07-21'
+generated: '2026-09-19'
 method: searched
 host: https://sageox.ai
-documents:
-- path: /.well-known/api-catalog
-  status: 200
-  file: sageox-api-catalog.json
-  note: RFC 9727 linkset; advertises the OpenAPI (service-desc) and MCP endpoint
-- path: /.well-known/openid-configuration
-  status: 200
-  file: sageox-openid-configuration.json
-  note: OpenID Connect discovery
-- path: /.well-known/oauth-authorization-server
-  status: 200
-  file: sageox-oauth-authorization-server.json
-  note: RFC 8414 OAuth authorization server metadata
-- path: /.well-known/security.txt
-  status: 404
-- path: /.well-known/ai-plugin.json
-  status: 404
+hosts:
+- host: https://sageox.ai
+  documents:
+  - path: /.well-known/api-catalog
+    status: 200
+    file: sageox-api-catalog.json
+    note: RFC 9727 linkset; advertises the OpenAPI (service-desc) and MCP endpoint
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: sageox-openid-configuration.json
+    note: OpenID Connect discovery
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: sageox-oauth-authorization-server.json
+    note: RFC 8414 OAuth authorization server metadata
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: sageox-sageox-oauth-protected-resource.json
+    bytes: 185
+  path_echo_control: passed
+x-shape-fix:
+  converted: '2026-08-20'
+  from: documents
+  note: Rewritten into hosts[] -> documents[], the only shape well_known_docs() in score.rb reads. A served
+    .well-known surface recorded in any other shape scores as absent.
+x-mcp-probe:
+  probed: '2026-09-19'
+  issue: roadmap#321, roadmap#337
+  documents:
+  - host: https://sageox.ai
+    path: /.well-known/oauth-protected-resource
+    file: sageox-sageox-oauth-protected-resource.json
+  validated_on: resource (RFC 9728) / issuer (RFC 8414, OIDC)
+  negative_control: one per host; a 2xx JSON object at an impossible path discards the host
+note: 'MCP-host OAuth discovery added 2026-09-19 (roadmap#321/#337): the harvest visits a provider''s
+  primary hosts, and RFC 9728 protected-resource metadata lives on the MCP host, so these documents existed
+  and were invisible to the scorer. Fetched live and validated on `resource`/`issuer`; one negative control
+  per host.'
