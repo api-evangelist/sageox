@@ -39,6 +39,7 @@ created: '2026-07-17'
 modified: '2026-07-17'
 tags:
 - Company
+- A2A
 apis:
 - aid: sageox:sageox-admin-api
   name: Sageox Admin API
@@ -265,7 +266,7 @@ apis:
   - type: OpenAPI
     url: openapi/sageox-repository-api-openapi.yml
 - aid: sageox:sageox-runs-api
-  name: Sageox runs API
+  name: Sageox Runs API
   description: The runs API from Sageox — 7 operation(s) for runs.
   tags:
   - Runs
@@ -315,3 +316,10 @@ common:
   url: a2a/sageox-a2a.yml
   name: A2A Agent Card
   description: Agent Card served at /.well-known/agent-card.json (flavored against A2A 1.0.0).
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://sageox.ai/.well-known/agent-card.json"
+  grade: "near-conformant"
+  protocol_version: "1.0"
+  control: 404
