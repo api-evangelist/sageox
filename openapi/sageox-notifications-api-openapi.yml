@@ -975,22 +975,31 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
-    ErrorResponse:
+    PaginationMeta:
       type: object
-      description: Standard error response returned by all endpoints on failure.
+      description: Pagination metadata included in all list responses. Use `offset + limit` for the next page; stop when `hasMore` is `false`.
       required:
-      - success
-      - error
+      - total
+      - limit
+      - offset
+      - hasMore
       properties:
-        success:
+        total:
+          type: integer
+          description: Total number of records matching the query (ignoring limit/offset).
+          example: 100
+        limit:
+          type: integer
+          description: Maximum number of records returned in this page. Matches the `limit` query parameter.
+          example: 20
+        offset:
+          type: integer
+          description: Number of records skipped. Matches the `offset` query parameter.
+          example: 0
+        hasMore:
           type: boolean
-          description: Always `false` for error responses.
-          enum:
-          - false
-        error:
-          type: string
-          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
-          example: Invalid request parameters
+          description: '`true` if more records exist beyond this page. When `false`, this is the last page.'
+          example: true
     NotificationDTO:
       type: object
       description: A user notification. Notifications are created by workflows, recordings, and system events, and delivered via polling or SSE streaming.
@@ -1063,31 +1072,22 @@ components:
           format: date-time
           description: Last modification time. Updates when read status changes.
           example: '2025-12-03T10:30:00Z'
-    PaginationMeta:
+    ErrorResponse:
       type: object
-      description: Pagination metadata included in all list responses. Use `offset + limit` for the next page; stop when `hasMore` is `false`.
+      description: Standard error response returned by all endpoints on failure.
       required:
-      - total
-      - limit
-      - offset
-      - hasMore
+      - success
+      - error
       properties:
-        total:
-          type: integer
-          description: Total number of records matching the query (ignoring limit/offset).
-          example: 100
-        limit:
-          type: integer
-          description: Maximum number of records returned in this page. Matches the `limit` query parameter.
-          example: 20
-        offset:
-          type: integer
-          description: Number of records skipped. Matches the `offset` query parameter.
-          example: 0
-        hasMore:
+        success:
           type: boolean
-          description: '`true` if more records exist beyond this page. When `false`, this is the last page.'
-          example: true
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
   securitySchemes:
     bearerAuth:
       type: http
