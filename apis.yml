@@ -306,6 +306,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/sageox-capability-edges.yml
+  name: Sageox Business Capability Map
 - type: AgentSkill
   url: skills/sageox-capture-a-recording.md
 - type: MCPServer

@@ -1,0 +1,50 @@
+slug: sageox
+provider: Sageox
+generated_by: planning/capability-mapping/scripts/classify_capabilities.py
+model: claude-opus-5
+frame:
+- Software & Technology
+min_confidence: 0.7
+capability_model:
+  source: https://github.com/vincentmakes/turbo-ea-capabilities
+  license: CC-BY-4.0
+  attribution: Turbo EA Capabilities by Vincent Verdet — Turbo EA, https://github.com/vincentmakes/turbo-ea-capabilities,
+    CC BY 4.0
+  notice: NOTICE
+edge_count: 3
+edges:
+- tag: AgentX
+  spec_file: sageox-agentx-api-openapi.yml
+  capability_id: BC-4280
+  capability_id_l1: BC-4280
+  capability_name: Product Telemetry & Experimentation Management
+  confidence: 0.82
+  evidence: POST /api/v1/agentx/capture  agentxCapture  Ingest telemetry events; GET /api/v1/agentx/{app_id}/summary  Get
+    KPI summary; GET /api/v1/agentx/{app_id}/friction  Get friction forensics
+  reason: The surface registers apps, ingests product telemetry events and returns usage KPIs, event time
+    series, command rankings and friction analysis — product telemetry and usage analytics. It spans both
+    instrumentation/ingestion and analytical read models, so the L1 is the defensible level.
+- tag: API Keys
+  spec_file: sageox-api-keys-api-openapi.yml
+  capability_id: BC-4270.40
+  capability_id_l1: BC-4270
+  capability_name: Developer Identity & Credential Management
+  confidence: 0.72
+  evidence: POST /api/v1/api-keys  createAPIKey  Create API key; DELETE /api/v1/api-keys/{id}  revokeAPIKey  Revoke
+    API key
+  reason: Issuance, listing and revocation of API keys for programmatic access to the platform is developer
+    credential stewardship. It is plumbing-adjacent, but the capability frame has an explicit home for
+    API credential lifecycle; confidence moderated because no OAuth client or federation detail is shown.
+- tag: Firmware Admin
+  spec_file: sageox-firmware-admin-api-openapi.yml
+  capability_id: BC-4210.40
+  capability_id_l1: BC-4210
+  capability_name: Deployment Orchestration
+  confidence: 0.72
+  evidence: POST /api/v1/internal/hq/firmware/{firmware_id}/activate  Activate a staged firmware release;
+    PATCH ... Update min_version security floor and/or rollout percentage; POST ... /dryrun  Preview rollout
+    cohort without targeting devices
+  reason: Staged release activation, rollout percentage control, fleet-wide pause kill-switch, cohort
+    dry-run and per-device pinning are progressive-delivery mechanics with controlled blast radius — deployment
+    orchestration. Confidence moderated because the artefact is device firmware rather than a SaaS service,
+    and release-engineering (4210.30) is a near neighbour.
