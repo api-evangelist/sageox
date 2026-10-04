@@ -1,24 +1,22 @@
-# Kin Score artifact — sageox — 2026-08-27T103455
+# Kin Score artifact — sageox — 2026-09-24T090406
 # The API Evangelist rating (https://github.com/api-evangelist/kin-score). Generated; do not edit.
 ---
 kin_score:
   slug: sageox
-  schema_version: 0.15.1
-  scored_at: '2026-08-27'
-  run_ts: 2026-08-27T103455
-  composite: 21.8
+  schema_version: 0.22.0
+  scored_at: '2026-09-24'
+  run_ts: 2026-09-24T090406
+  composite: 24.1
   band: emerging
   facets:
-    discoverability: 51.9
+    discoverability: 35.2
     contract_quality: 57.1
-    governance: 16.7
+    contract_governance: 4.5
     operational_transparency: 0.0
     developer_ergonomics: 1.8
-    commercial_clarity: 0.0
-    contract_governance: 16.7
     access_clarity: 0.0
   agent_readiness:
-    score: 63.8
+    score: 67.4
     band: agent-ready
     band_gated_from: agent-native
     dimensions:
@@ -38,7 +36,7 @@ kin_score:
       agent_card: flavored
       dry_run_mode: false
       delegated_identity: served
-      protected_resource_metadata: false
+      protected_resource_metadata: verified
       dynamic_client_registration: true
       agentic_commerce: false
   needs_work:
