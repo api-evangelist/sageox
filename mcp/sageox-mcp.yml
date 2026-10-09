@@ -39,3 +39,21 @@ deployment:
   probe: gated
   checked: '2026-08-12'
   source: catalog MCP census
+rfc9728:
+  endpoint: https://sageox.ai/api/v1/mcp
+  metadata_url: https://sageox.ai/.well-known/oauth-protected-resource/mcp
+  discovered_via: WWW-Authenticate resource_metadata on an anonymous POST initialize
+  fetched: '2026-09-25'
+  http_status: 200
+  content_type: application/json
+  document:
+    resource: https://sageox.ai/mcp
+    authorization_servers:
+    - https://sageox.ai
+    scopes_supported:
+    - openid
+    - profile
+    - email
+    - offline_access
+    bearer_methods_supported:
+    - header
