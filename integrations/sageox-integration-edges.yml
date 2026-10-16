@@ -15,7 +15,7 @@ edges:
     note: 'sageox declares OpenAI compatibility: ''description: OpenAI-compatible chat completion endpoints. Proxies
       requests to configured LLM providers (Bedrock, OpenAI) with model routing, token usage trackin'''
     detected_by: sweep-model-routing.py
-    detected: '2026-10-13'
+    detected: '2026-10-15'
   detected_by: sweep-model-routing.py
   first_seen: '2026-10-13'
 generated: '2026-10-13'
