@@ -975,6 +975,22 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      description: Standard error response returned by all endpoints on failure.
+      required:
+      - success
+      - error
+      properties:
+        success:
+          type: boolean
+          description: Always `false` for error responses.
+          enum:
+          - false
+        error:
+          type: string
+          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
+          example: Invalid request parameters
     PaginationMeta:
       type: object
       description: Pagination metadata included in all list responses. Use `offset + limit` for the next page; stop when `hasMore` is `false`.
@@ -1072,22 +1088,6 @@ components:
           format: date-time
           description: Last modification time. Updates when read status changes.
           example: '2025-12-03T10:30:00Z'
-    ErrorResponse:
-      type: object
-      description: Standard error response returned by all endpoints on failure.
-      required:
-      - success
-      - error
-      properties:
-        success:
-          type: boolean
-          description: Always `false` for error responses.
-          enum:
-          - false
-        error:
-          type: string
-          description: Human-readable error message describing what went wrong. Do not parse this programmatically — use HTTP status codes for control flow.
-          example: Invalid request parameters
   securitySchemes:
     bearerAuth:
       type: http
